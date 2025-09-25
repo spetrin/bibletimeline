@@ -158,7 +158,7 @@
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+  let analytics;\r\n  try {\r\n    analytics = getAnalytics(app);\r\n  } catch (analyticsError) {\r\n    console.warn("Firebase Analytics недоступна в текущем окружении", analyticsError);\r\n  }
 
   const auth = getAuth(app);
   auth.languageCode = "ru";
@@ -365,6 +365,7 @@
 
 </body>
 </html>
+
 
 
 
