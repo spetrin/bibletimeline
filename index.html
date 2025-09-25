@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Приветствие по времени суток</title>
+  <style>
+    :root {
+      --backdrop: rgba(0,0,0,.25);
+      --card-bg: #fff;
+      --card-shadow: 0 12px 32px rgba(0,0,0,.15);
+      --radius: 16px;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #fff;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    }
+    /* центрируем «всплывающее» окно */
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: var(--backdrop);
+      animation: fade .3s ease both;
+    }
+    .card {
+      width: min(92vw, 560px);
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+      padding: 28px 24px;
+      text-align: center;
+      transform: translateY(8px);
+      animation: up .3s .05s ease both;
+    }
+    h1 {
+      margin: 0 0 .25rem;
+      font-size: clamp(1.4rem, 3.5vw, 2rem);
+      line-height: 1.2;
+    }
+    p {
+      margin: .25rem 0 1rem;
+      color: #555;
+    }
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 10px;
+      padding: .7rem 1.1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      background: #111;
+      color: #fff;
+    }
+    @keyframes fade { from {opacity: 0} to {opacity: 1} }
+    @keyframes up { from {opacity: 0; transform: translateY(16px)} to {opacity:1; transform: translateY(0)} }
+
+    /* На всякий случай: если JS выключен — покажем блок по центру через flex */
+    noscript {
+      position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+      background: var(--backdrop);
+    }
+    noscript .card { transform:none; animation:none }
+  </style>
+</head>
+<body>
+
+  <div class="backdrop" id="hello-backdrop" aria-modal="true" role="dialog" aria-labelledby="hello-title" aria-describedby="hello-desc">
+    <div class="card" role="document">
+      <h1 id="hello-title">Здравствуйте!</h1>
+      <p id="hello-desc">Рады видеть вас на странице.</p>
+      <button type="button" id="hello-ok">Ок</button>
+    </div>
+  </div>
+
+  <noscript>
+    <div class="card">
+      <h1>Здравствуйте!</h1>
+      <p>Включите JavaScript, чтобы увидеть приветствие по времени суток.</p>
+    </div>
+  </noscript>
+
+  <script>
+    // Границы суток (часы 0–23). При желании подправь под себя.
+    // утро: 5–10, день: 11–16, вечер: 17–21, ночь: 22–4
+    function getGreetingByHour(h) {
+      if (h >= 5 && h <= 10)   return "Доброе утро";
+      if (h >= 11 && h <= 16)  return "Добрый день";
+      if (h >= 17 && h <= 21)  return "Добрый вечер";
+      return "Доброй ночи";
+    }
+
+    // Берём локальное время пользователя
+    const now   = new Date();
+    const hour  = now.getHours();
+    const greet = getGreetingByHour(hour);
+
+    // Подставляем текст
+    const title = document.getElementById("hello-title");
+    const desc  = document.getElementById("hello-desc");
+    title.textContent = greet + "!";
+    desc.textContent  = "Сейчас " + String(hour).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+
+    // Кнопка закрытия
+    const okBtn = document.getElementById("hello-ok");
+    const backdrop = document.getElementById("hello-backdrop");
+    okBtn.addEventListener("click", () => backdrop.remove());
+
+    // Закрытие по клику мимо карточки и по Esc
+    backdrop.addEventListener("click", (e) => { if (e.target === backdrop) backdrop.remove(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") backdrop.remove(); });
+  </script>
+</body>
+</html>
