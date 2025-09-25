@@ -8,14 +8,13 @@
     :root {
       color-scheme: light;
       font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-      --board-bg: #f8fafc;
     }
     *, *::before, *::after { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; }
     body {
       display: grid;
       place-items: center;
-      background: radial-gradient(circle at 20% 20%, #e0f2fe, #bfdbfe 45%, #a5b4fc 85%);
+      background: radial-gradient(circle at 18% 18%, #e0f2fe, #bfdbfe 45%, #a5b4fc 85%);
       padding: 24px;
     }
     .board {
@@ -46,11 +45,15 @@
       user-select: none;
       cursor: grab;
       touch-action: none;
-      transition: box-shadow 0.35s ease;
+      transition: box-shadow 0.35s ease, transform 0.2s ease;
     }
     .shape:active {
       cursor: grabbing;
       box-shadow: 0 18px 36px rgba(15, 23, 42, 0.22);
+    }
+    .shape--magnetized {
+      transform: scale(1.04);
+      box-shadow: 0 16px 40px rgba(30, 64, 175, 0.25);
     }
     .shape--rect {
       width: 180px;
@@ -71,35 +74,38 @@
     }
     .snap-indicator {
       position: absolute;
-      width: 64px;
-      height: 64px;
+      width: 68px;
+      height: 68px;
       border-radius: 50%;
       border: 2px dashed rgba(59, 130, 246, 0.55);
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0) 70%);
       pointer-events: none;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%) scale(0.8);
       opacity: 0;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.15s ease, transform 0.2s ease;
     }
     .snap-indicator.visible {
       opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
     }
   </style>
 </head>
 <body>
   <div class="board" id="board">
-    <div class="hint">Перетащите фигуры. Когда они окажутся ближе 60&nbsp;px друг к другу, сработают «магниты».</div>
+    <div class="hint">Перетащите фигуры. Когда они окажутся ближе 80&nbsp;px друг к другу, «магниты» подтянут их вместе.</div>
     <div class="shape shape--rect" data-shape="rectangle">Прямоугольник</div>
     <div class="shape shape--circle" data-shape="circle">Круг</div>
     <div class="snap-indicator" id="snap-indicator"></div>
   </div>
 
-  <script>
+    <script>
     const board = document.getElementById('board');
     const shapes = Array.from(board.querySelectorAll('.shape'));
     const indicator = document.getElementById('snap-indicator');
 
-    const MAGNET_RADIUS = 60; // px
-    const SNAP_OFFSET = 12; // px отступ между фигурами после прилипания
+    const MAGNET_RADIUS = 100; // px ? ???? ??????????
+    const SNAP_OFFSET = 12; // px ? ?????????? ????? ???????? ????? ??????????
+    const MAGNET_STRENGTH = 0.45; // 0..1 ? ????????? ?????? ?????? ??????? ??? ???????????
 
     let activeShape = null;
     let pointerId = null;
@@ -114,9 +120,66 @@
     }
 
     function distance(a, b) {
-      const dx = a.x - b.x;
-      const dy = a.y - b.y;
-      return Math.hypot(dx, dy);
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    function findSnapTarget(movingShape) {
+      const movingCenter = getCenter(movingShape);
+      let bestTarget = null;
+      let minDist = Infinity;
+
+      for (const other of shapes) {
+        if (other === movingShape) continue;
+        const otherCenter = getCenter(other);
+        const dist = distance(movingCenter, otherCenter);
+        if (dist < minDist) {
+          minDist = dist;
+          bestTarget = { element: other, center: otherCenter, distance: dist };
+        }
+      }
+
+      if (!bestTarget || bestTarget.distance > MAGNET_RADIUS) return null;
+
+      const { element: other, center: otherCenter } = bestTarget;
+      const movingHalfWidth = movingShape.offsetWidth / 2;
+      const movingHalfHeight = movingShape.offsetHeight / 2;
+      const otherHalfWidth = other.offsetWidth / 2;
+      const otherHalfHeight = other.offsetHeight / 2;
+
+      const movingCenter = getCenter(movingShape);
+      const dx = movingCenter.x - otherCenter.x;
+      const dy = movingCenter.y - otherCenter.y;
+      const angle = Math.atan2(dy, dx);
+
+      const targetLeft = other.offsetLeft + otherHalfWidth + Math.cos(angle) * (otherHalfWidth + movingHalfWidth + SNAP_OFFSET) - movingHalfWidth;
+      const targetTop = other.offsetTop + otherHalfHeight + Math.sin(angle) * (otherHalfHeight + movingHalfHeight + SNAP_OFFSET) - movingHalfHeight;
+
+      return { left: targetLeft, top: targetTop, center: otherCenter };
+    }
+
+    function clampPosition({ element, left, top }) {
+      const maxLeft = board.clientWidth - element.offsetWidth;
+      const maxTop = board.clientHeight - element.offsetHeight;
+      return {
+        left: Math.min(Math.max(0, left), maxLeft),
+        top: Math.min(Math.max(0, top), maxTop),
+      };
+    }
+
+    function applySnap(movingShape) {
+      const snap = findSnapTarget(movingShape);
+      if (!snap) {
+        hideIndicator();
+        movingShape.classList.remove('shape--magnetized');
+        return false;
+      }
+
+      const clamped = clampPosition({ element: movingShape, left: snap.left, top: snap.top });
+      movingShape.style.left = `${clamped.left}px`;
+      movingShape.style.top = `${clamped.top}px`;
+      showIndicator(snap.center.x, snap.center.y);
+      movingShape.classList.add('shape--magnetized');
+      return true;
     }
 
     function showIndicator(x, y) {
@@ -129,89 +192,129 @@
       indicator.classList.remove('visible');
     }
 
-    function clampPosition({ element, left, top }) {
-      const maxLeft = board.clientWidth - element.offsetWidth;
-      const maxTop = board.clientHeight - element.offsetHeight;
-      return {
-        left: Math.min(Math.max(0, left), maxLeft),
-        top: Math.min(Math.max(0, top), maxTop),
-      };
-    }
-
-    function snapIfNeeded(movingShape) {
-      const movingCenter = getCenter(movingShape);
-      let snapped = false;
-
-      for (const other of shapes) {
-        if (other === movingShape) continue;
-        const otherCenter = getCenter(other);
-        const dist = distance(movingCenter, otherCenter);
-
-        if (dist <= MAGNET_RADIUS) {
-          const dx = movingCenter.x - otherCenter.x;
-          const dy = movingCenter.y - otherCenter.y;
-          const angle = Math.atan2(dy, dx);
-
-          const targetLeft = other.offsetLeft + other.offsetWidth / 2 + Math.cos(angle) * (other.offsetWidth / 2 + SNAP_OFFSET + movingShape.offsetWidth / 2) - movingShape.offsetWidth / 2;
-          const targetTop = other.offsetTop + other.offsetHeight / 2 + Math.sin(angle) * (other.offsetHeight / 2 + SNAP_OFFSET + movingShape.offsetHeight / 2) - movingShape.offsetHeight / 2;
-
-          const clamped = clampPosition({ element: movingShape, left: targetLeft, top: targetTop });
-
-          movingShape.style.left = `${clamped.left}px`;
-          movingShape.style.top = `${clamped.top}px`;
-
-          showIndicator(otherCenter.x, otherCenter.y);
-          snapped = true;
-          break;
-        }
-      }
-
-      if (!snapped) {
-        hideIndicator();
-      }
-    }
-
-    function onPointerDown(event) {
+    function startDrag(event) {
       if (!event.target.classList.contains('shape')) return;
 
       activeShape = event.target;
-      pointerId = event.pointerId;
-      activeShape.setPointerCapture(pointerId);
+      pointerId = event.pointerId ?? 'mouse';
+
+      if (activeShape.setPointerCapture) {
+        try {
+          activeShape.setPointerCapture(event.pointerId);
+        } catch (_) {
+          // ??????????: ??????? ????? ?? ???????????? capture (iOS Safari)
+        }
+      }
 
       const rect = activeShape.getBoundingClientRect();
       offsetX = event.clientX - rect.left;
       offsetY = event.clientY - rect.top;
     }
 
-    function onPointerMove(event) {
-      if (!activeShape || event.pointerId !== pointerId) return;
+    function moveDrag(event) {
+      if (!activeShape) return;
+      const currentPointerId = event.pointerId ?? 'mouse';
+      if (pointerId !== null && currentPointerId !== pointerId) return;
 
       const boardRect = board.getBoundingClientRect();
       let newLeft = event.clientX - boardRect.left - offsetX;
       let newTop = event.clientY - boardRect.top - offsetY;
 
       const position = clampPosition({ element: activeShape, left: newLeft, top: newTop });
+      newLeft = position.left;
+      newTop = position.top;
 
-      activeShape.style.left = `${position.left}px`;
-      activeShape.style.top = `${position.top}px`;
+      const snap = findSnapTarget(activeShape);
+      if (snap) {
+        showIndicator(snap.center.x, snap.center.y);
+        activeShape.classList.add('shape--magnetized');
+        newLeft = newLeft + (snap.left - newLeft) * MAGNET_STRENGTH;
+        newTop = newTop + (snap.top - newTop) * MAGNET_STRENGTH;
+      } else {
+        hideIndicator();
+        activeShape.classList.remove('shape--magnetized');
+      }
 
-      hideIndicator();
+      activeShape.style.left = `${newLeft}px`;
+      activeShape.style.top = `${newTop}px`;
     }
 
-    function onPointerUp(event) {
-      if (!activeShape || event.pointerId !== pointerId) return;
+    function endDrag(event) {
+      if (!activeShape) return;
+      const currentPointerId = event.pointerId ?? 'mouse';
+      if (pointerId !== null && currentPointerId !== pointerId) return;
 
-      snapIfNeeded(activeShape);
+      if (!applySnap(activeShape)) {
+        activeShape.classList.remove('shape--magnetized');
+      }
 
-      activeShape.releasePointerCapture(pointerId);
+      if (activeShape.releasePointerCapture) {
+        try {
+          activeShape.releasePointerCapture(event.pointerId);
+        } catch (_) {
+          // ??????????, ???? capture ?? ??????????????
+        }
+      }
+
       activeShape = null;
       pointerId = null;
     }
 
-    board.addEventListener('pointerdown', onPointerDown);
-    board.addEventListener('pointermove', onPointerMove);
-    board.addEventListener('pointerup', onPointerUp);
-    board.addEventListener('pointercancel', onPointerUp);
+    if ('PointerEvent' in window) {
+      board.addEventListener('pointerdown', (event) => {
+        startDrag(event);
+      });
+      window.addEventListener('pointermove', (event) => {
+        moveDrag(event);
+      });
+      window.addEventListener('pointerup', (event) => {
+        endDrag(event);
+      });
+      window.addEventListener('pointercancel', (event) => {
+        endDrag(event);
+      });
+    } else {
+      // ?????? ??? ?????? ?????????
+      board.addEventListener('mousedown', (event) => {
+        startDrag(event);
+      });
+      window.addEventListener('mousemove', (event) => {
+        moveDrag(event);
+      });
+      window.addEventListener('mouseup', (event) => {
+        endDrag(event);
+      });
+
+      board.addEventListener('touchstart', (event) => {
+        const touch = event.changedTouches[0];
+        const simulated = new MouseEvent('mousedown', {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+        });
+        simulated.target = event.target;
+        startDrag(simulated);
+      }, { passive: false });
+
+      window.addEventListener('touchmove', (event) => {
+        const touch = event.changedTouches[0];
+        const simulated = new MouseEvent('mousemove', {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+        });
+        moveDrag(simulated);
+        event.preventDefault();
+      }, { passive: false });
+
+      window.addEventListener('touchend', (event) => {
+        const touch = event.changedTouches[0];
+        const simulated = new MouseEvent('mouseup', {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+        });
+        endDrag(simulated);
+      });
+    }
   </script>
+
 </body>
 </html>
