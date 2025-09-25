@@ -1,0 +1,217 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Игровое поле с магнитами</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      --board-bg: #f8fafc;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 20% 20%, #e0f2fe, #bfdbfe 45%, #a5b4fc 85%);
+      padding: 24px;
+    }
+    .board {
+      position: relative;
+      width: min(92vw, 680px);
+      height: min(88vh, 460px);
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      border-radius: 32px;
+      box-shadow: 0 40px 60px rgba(15, 23, 42, 0.28);
+      overflow: hidden;
+      touch-action: none;
+    }
+    .hint {
+      position: absolute;
+      inset: 18px;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      color: #475569;
+      pointer-events: none;
+    }
+    .shape {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      font-weight: 600;
+      color: #0f172a;
+      user-select: none;
+      cursor: grab;
+      touch-action: none;
+      transition: box-shadow 0.35s ease;
+    }
+    .shape:active {
+      cursor: grabbing;
+      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.22);
+    }
+    .shape--rect {
+      width: 180px;
+      height: 120px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      color: #f0f9ff;
+      left: 44px;
+      top: 48px;
+    }
+    .shape--circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f97316, #fde68a);
+      left: 320px;
+      top: 210px;
+    }
+    .snap-indicator {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 2px dashed rgba(59, 130, 246, 0.55);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .snap-indicator.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="board" id="board">
+    <div class="hint">Перетащите фигуры. Когда они окажутся ближе 60&nbsp;px друг к другу, сработают «магниты».</div>
+    <div class="shape shape--rect" data-shape="rectangle">Прямоугольник</div>
+    <div class="shape shape--circle" data-shape="circle">Круг</div>
+    <div class="snap-indicator" id="snap-indicator"></div>
+  </div>
+
+  <script>
+    const board = document.getElementById('board');
+    const shapes = Array.from(board.querySelectorAll('.shape'));
+    const indicator = document.getElementById('snap-indicator');
+
+    const MAGNET_RADIUS = 60; // px
+    const SNAP_OFFSET = 12; // px отступ между фигурами после прилипания
+
+    let activeShape = null;
+    let pointerId = null;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    function getCenter(el) {
+      return {
+        x: el.offsetLeft + el.offsetWidth / 2,
+        y: el.offsetTop + el.offsetHeight / 2,
+      };
+    }
+
+    function distance(a, b) {
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      return Math.hypot(dx, dy);
+    }
+
+    function showIndicator(x, y) {
+      indicator.style.left = `${x}px`;
+      indicator.style.top = `${y}px`;
+      indicator.classList.add('visible');
+    }
+
+    function hideIndicator() {
+      indicator.classList.remove('visible');
+    }
+
+    function clampPosition({ element, left, top }) {
+      const maxLeft = board.clientWidth - element.offsetWidth;
+      const maxTop = board.clientHeight - element.offsetHeight;
+      return {
+        left: Math.min(Math.max(0, left), maxLeft),
+        top: Math.min(Math.max(0, top), maxTop),
+      };
+    }
+
+    function snapIfNeeded(movingShape) {
+      const movingCenter = getCenter(movingShape);
+      let snapped = false;
+
+      for (const other of shapes) {
+        if (other === movingShape) continue;
+        const otherCenter = getCenter(other);
+        const dist = distance(movingCenter, otherCenter);
+
+        if (dist <= MAGNET_RADIUS) {
+          const dx = movingCenter.x - otherCenter.x;
+          const dy = movingCenter.y - otherCenter.y;
+          const angle = Math.atan2(dy, dx);
+
+          const targetLeft = other.offsetLeft + other.offsetWidth / 2 + Math.cos(angle) * (other.offsetWidth / 2 + SNAP_OFFSET + movingShape.offsetWidth / 2) - movingShape.offsetWidth / 2;
+          const targetTop = other.offsetTop + other.offsetHeight / 2 + Math.sin(angle) * (other.offsetHeight / 2 + SNAP_OFFSET + movingShape.offsetHeight / 2) - movingShape.offsetHeight / 2;
+
+          const clamped = clampPosition({ element: movingShape, left: targetLeft, top: targetTop });
+
+          movingShape.style.left = `${clamped.left}px`;
+          movingShape.style.top = `${clamped.top}px`;
+
+          showIndicator(otherCenter.x, otherCenter.y);
+          snapped = true;
+          break;
+        }
+      }
+
+      if (!snapped) {
+        hideIndicator();
+      }
+    }
+
+    function onPointerDown(event) {
+      if (!event.target.classList.contains('shape')) return;
+
+      activeShape = event.target;
+      pointerId = event.pointerId;
+      activeShape.setPointerCapture(pointerId);
+
+      const rect = activeShape.getBoundingClientRect();
+      offsetX = event.clientX - rect.left;
+      offsetY = event.clientY - rect.top;
+    }
+
+    function onPointerMove(event) {
+      if (!activeShape || event.pointerId !== pointerId) return;
+
+      const boardRect = board.getBoundingClientRect();
+      let newLeft = event.clientX - boardRect.left - offsetX;
+      let newTop = event.clientY - boardRect.top - offsetY;
+
+      const position = clampPosition({ element: activeShape, left: newLeft, top: newTop });
+
+      activeShape.style.left = `${position.left}px`;
+      activeShape.style.top = `${position.top}px`;
+
+      hideIndicator();
+    }
+
+    function onPointerUp(event) {
+      if (!activeShape || event.pointerId !== pointerId) return;
+
+      snapIfNeeded(activeShape);
+
+      activeShape.releasePointerCapture(pointerId);
+      activeShape = null;
+      pointerId = null;
+    }
+
+    board.addEventListener('pointerdown', onPointerDown);
+    board.addEventListener('pointermove', onPointerMove);
+    board.addEventListener('pointerup', onPointerUp);
+    board.addEventListener('pointercancel', onPointerUp);
+  </script>
+</body>
+</html>
