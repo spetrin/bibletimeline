@@ -265,6 +265,8 @@
         return "Неверный пароль. Поверьте ввод.";
       case "auth/user-not-found":
         return "Аккаунт не найден. Создайте его или попробуйте другой способ входа.";
+      case "auth/operation-not-allowed":
+        return "Метод входа по e-mail выключен. Разрешите его в консоли Firebase.";
       case "auth/too-many-requests":
         return "Слишком много попыток. Подождите немного и попробуйте снова.";
       default:
@@ -367,3 +369,4 @@
 
 </body>
 </html>
+
