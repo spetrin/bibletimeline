@@ -349,11 +349,7 @@
   toggleModeBtn.addEventListener("click", () => setMode(!isSignUpMode));
   authForm.addEventListener("submit", handlePasswordAuth);
   logoutBtn.addEventListener("click", handleLogout);
-  document.querySelectorAll("[data-provider]").forEach((button) => {
-    button.addEventListener("click", () => handleProviderSignIn(button.dataset.provider));
-  });
-
-  onAuthStateChanged(auth, (user) => {
+  document.querySelectorAll("[data-provider]").forEach((button) => {\r\n    button.addEventListener("click", () => handleProviderSignIn(button.dataset.provider));\r\n  });\r\n\r\n  getRedirectResult(auth)\r\n    .then((result) => {\r\n      if (result?.user) {\r\n        renderAppForUser(result.user);\r\n        toggleAuthVisibility(false);\r\n        formError.classList.add("hidden");\r\n      }\r\n    })\r\n    .catch((error) => {\r\n      if (error?.code && error.code !== "auth/no-auth-event") {\r\n        console.error("Ошибка завершения входа через redirect", error);\r\n        showError(resolveAuthError(error));\r\n      }\r\n    });\r\n\r\n  onAuthStateChanged(auth, (user) => {
     if (user) {
       renderAppForUser(user);
       toggleAuthVisibility(false);
@@ -369,4 +365,8 @@
 
 </body>
 </html>
+
+
+
+
 
