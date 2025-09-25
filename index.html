@@ -125,6 +125,7 @@
 
 
 
+
 <script type="module">
   import { initializeApp } from "firebase/app";
   import { getAnalytics } from "firebase/analytics";
@@ -138,14 +139,12 @@
     GoogleAuthProvider,
     OAuthProvider,
     signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     setPersistence,
     browserLocalPersistence
   } from "firebase/auth";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
   const firebaseConfig = {
     apiKey: "AIzaSyDfE1awohBPXiFNoACKIrzGEQgEiy4ZqdA",
     authDomain: "bibelzeitlinie.firebaseapp.com",
@@ -156,14 +155,18 @@
     measurementId: "G-D2PJPMXPV5"
   };
 
-  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
-  let analytics;\r\n  try {\r\n    analytics = getAnalytics(app);\r\n  } catch (analyticsError) {\r\n    console.warn("Firebase Analytics недоступна в текущем окружении", analyticsError);\r\n  }
+  let analytics;
+  try {
+    analytics = getAnalytics(app);
+  } catch (analyticsError) {
+    console.warn("Firebase Analytics ?????????? ? ??????? ?????????", analyticsError);
+  }
 
   const auth = getAuth(app);
   auth.languageCode = "ru";
   setPersistence(auth, browserLocalPersistence).catch((error) => {
-    console.warn("Не удалось сохранить сессию локально", error);
+    console.warn("?? ??????? ????????? ?????? ????????", error);
   });
 
   const appShell = document.getElementById("app-shell");
@@ -186,8 +189,8 @@
     isSignUpMode = signUp;
     nameField.classList.toggle("hidden", !signUp);
     toggleModeBtn.textContent = signUp
-      ? "У меня уже есть аккаунт — войти"
-      : "Я здесь впервые — создать аккаунт";
+      ? "? ???? ??? ???? ??????? ? ?????"
+      : "? ????? ??????? ? ??????? ???????";
     updateSubmitState(false);
     formError.classList.add("hidden");
   }
@@ -195,18 +198,18 @@
   function updateSubmitState(isLoading) {
     if (isLoading) {
       submitBtn.disabled = true;
-      submitBtn.textContent = isSignUpMode ? "Создание..." : "Вход...";
+      submitBtn.textContent = isSignUpMode ? "????????..." : "????...";
     } else {
       submitBtn.disabled = false;
-      submitBtn.textContent = isSignUpMode ? "Создать аккаунт" : "Войти";
+      submitBtn.textContent = isSignUpMode ? "??????? ???????" : "?????";
     }
   }
 
   function getGreetingByHour(hour) {
-    if (hour >= 5 && hour <= 10) return "Доброе утро";
-    if (hour >= 11 && hour <= 16) return "Добрый день";
-    if (hour >= 17 && hour <= 21) return "Добрый вечер";
-    return "Доброй ночи";
+    if (hour >= 5 && hour <= 10) return "?????? ????";
+    if (hour >= 11 && hour <= 16) return "?????? ????";
+    if (hour >= 17 && hour <= 21) return "?????? ?????";
+    return "?????? ????";
   }
 
   function getProviderLabel(providerId) {
@@ -216,25 +219,25 @@
       case "apple.com":
         return "Apple";
       case "password":
-        return "почта";
+        return "?????";
       case "anonymous":
-        return "гость";
+        return "?????";
       default:
-        return providerId || "неизвестно";
+        return providerId || "??????????";
     }
   }
 
   function renderAppForUser(user) {
     const now = new Date();
     const greeting = getGreetingByHour(now.getHours());
-    const displayName = (user.displayName || user.email || "пользователь").trim();
+    const displayName = (user.displayName || user.email || "????????????").trim();
     const providerId = user.providerData[0]?.providerId || (user.isAnonymous ? "anonymous" : "password");
 
     appGreeting.textContent = `${greeting}, ${displayName}!`;
-    appDescription.textContent = "Вы готовы продолжить работу с лентой времени.";
-    timelineTitle.textContent = "Лента времени доступна";
-    timelineSubtitle.textContent = `Аккаунт: ${getProviderLabel(providerId)}`;
-    userEmail.textContent = user.email || "—";
+    appDescription.textContent = "?? ?????? ?????????? ?????? ? ?????? ???????.";
+    timelineTitle.textContent = "????? ??????? ????????";
+    timelineSubtitle.textContent = `???????: ${getProviderLabel(providerId)}`;
+    userEmail.textContent = user.email || "?";
   }
 
   function toggleAuthVisibility(showAuth) {
@@ -256,21 +259,28 @@
     const code = error?.code;
     switch (code) {
       case "auth/email-already-in-use":
-        return "Такой e-mail уже зарегистрирован. Попробуйте войти.";
+        return "????? e-mail ??? ???????????????. ?????????? ?????.";
       case "auth/invalid-email":
-        return "Введите корректный e-mail.";
+        return "??????? ?????????? e-mail.";
       case "auth/weak-password":
-        return "Минимальная длина пароля — 6 символов.";
+        return "??????????? ????? ?????? ? 6 ????????.";
       case "auth/wrong-password":
-        return "Неверный пароль. Поверьте ввод.";
+        return "???????? ??????. ????????? ????.";
       case "auth/user-not-found":
-        return "Аккаунт не найден. Создайте его или попробуйте другой способ входа.";
+        return "??????? ?? ??????. ???????? ??? ??? ?????????? ?????? ?????? ?????.";
       case "auth/operation-not-allowed":
-        return "Метод входа по e-mail выключен. Разрешите его в консоли Firebase.";
+        return "????? ????? ?? e-mail ????????. ????????? ??? ? ??????? Firebase.";
       case "auth/too-many-requests":
-        return "Слишком много попыток. Подождите немного и попробуйте снова.";
+        return "??????? ????? ???????. ????????? ??????? ? ?????????? ?????.";
+      case "auth/popup-blocked":
+      case "auth/popup-blocked-by-browser":
+        return "??????? ???????????? ??????????? ????. ????????? ??????????? ???? ? ?????????? ?????.";
+      case "auth/unauthorized-domain":
+        return "????? ?? ???????? ??? ??????????? ? Firebase. ???????? ??????? ???? ? ?????? Authorized domains.";
+      case "auth/cancelled-popup-request":
+        return "?????????? ??????? ????? ??? ???????????. ?????????? ????? ????? ?????????.";
       default:
-        return "Не удалось выполнить действие. Попробуйте ещё раз позже.";
+        return "?? ??????? ????????? ????????. ?????????? ??? ??? ?????.";
     }
   }
 
@@ -284,10 +294,10 @@
     const displayName = (formData.get("displayName") || "").trim();
 
     if (!/^\S+@\S+\.\S+$/.test(email)) {
-      return showError("Введите корректный e-mail.");
+      return showError("??????? ?????????? e-mail.");
     }
     if (password.length < 6) {
-      return showError("Минимальная длина пароля — 6 символов.");
+      return showError("??????????? ????? ?????? ? 6 ????????.");
     }
 
     updateSubmitState(true);
@@ -306,7 +316,7 @@
         setMode(false);
       }
     } catch (error) {
-      console.error("Ошибка пароля/почты", error);
+      console.error("?????? ??????/?????", error);
       showError(resolveAuthError(error));
     } finally {
       updateSubmitState(false);
@@ -315,22 +325,38 @@
 
   async function handleProviderSignIn(providerKey) {
     formError.classList.add("hidden");
+
+    let provider;
+    if (providerKey === "google") {
+      provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+    } else if (providerKey === "apple") {
+      provider = new OAuthProvider("apple.com");
+      provider.addScope("email");
+      provider.addScope("name");
+    } else {
+      return;
+    }
+
     try {
-      if (providerKey === "google") {
-        const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: "select_account" });
-        await signInWithPopup(auth, provider);
-      } else if (providerKey === "apple") {
-        const provider = new OAuthProvider("apple.com");
-        provider.addScope("email");
-        provider.addScope("name");
-        await signInWithPopup(auth, provider);
-      }
+      await signInWithPopup(auth, provider);
     } catch (error) {
-      if (error?.code === "auth/popup-closed-by-user") {
+      if (error?.code === "auth/popup-closed-by-user" || error?.code === "auth/cancelled-popup-request") {
         return;
       }
-      console.error("Ошибка входа через провайдера", error);
+
+      if (error?.code === "auth/popup-blocked" || error?.code === "auth/popup-blocked-by-browser") {
+        try {
+          await signInWithRedirect(auth, provider);
+          return;
+        } catch (redirectError) {
+          console.error("?????? ????? ????? redirect", redirectError);
+          showError(resolveAuthError(redirectError));
+          return;
+        }
+      }
+
+      console.error("?????? ????? ????? ??????????", error);
       showError(resolveAuthError(error));
     }
   }
@@ -341,15 +367,35 @@
       authForm.reset();
       setMode(false);
     } catch (error) {
-      console.error("Ошибка выхода", error);
-      showError("Не удалось выйти. Попробуйте ещё раз.");
+      console.error("?????? ??????", error);
+      showError("?? ??????? ?????. ?????????? ??? ???.");
     }
   }
 
   toggleModeBtn.addEventListener("click", () => setMode(!isSignUpMode));
   authForm.addEventListener("submit", handlePasswordAuth);
   logoutBtn.addEventListener("click", handleLogout);
-  document.querySelectorAll("[data-provider]").forEach((button) => {\r\n    button.addEventListener("click", () => handleProviderSignIn(button.dataset.provider));\r\n  });\r\n\r\n  getRedirectResult(auth)\r\n    .then((result) => {\r\n      if (result?.user) {\r\n        renderAppForUser(result.user);\r\n        toggleAuthVisibility(false);\r\n        formError.classList.add("hidden");\r\n      }\r\n    })\r\n    .catch((error) => {\r\n      if (error?.code && error.code !== "auth/no-auth-event") {\r\n        console.error("Ошибка завершения входа через redirect", error);\r\n        showError(resolveAuthError(error));\r\n      }\r\n    });\r\n\r\n  onAuthStateChanged(auth, (user) => {
+
+  document.querySelectorAll("[data-provider]").forEach((button) => {
+    button.addEventListener("click", () => handleProviderSignIn(button.dataset.provider));
+  });
+
+  getRedirectResult(auth)
+    .then((result) => {
+      if (result?.user) {
+        renderAppForUser(result.user);
+        toggleAuthVisibility(false);
+        formError.classList.add("hidden");
+      }
+    })
+    .catch((error) => {
+      if (error?.code && error.code !== "auth/no-auth-event") {
+        console.error("?????? ?????????? ????? ????? redirect", error);
+        showError(resolveAuthError(error));
+      }
+    });
+
+  onAuthStateChanged(auth, (user) => {
     if (user) {
       renderAppForUser(user);
       toggleAuthVisibility(false);
@@ -360,6 +406,7 @@
     }
   });
 </script>
+
 
 
 
