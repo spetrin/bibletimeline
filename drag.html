@@ -1,320 +1,4038 @@
-﻿<!doctype html>
+
+
+
+
+<!doctype html>
+
+
+
 <html lang="ru">
+
+
+
 <head>
+
+
+
   <meta charset="utf-8" />
+
+
+
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Игровое поле с магнитами</title>
+
+
+
+  <title>Р В РІР‚ВР В РЎвЂР В Р’В±Р В Р’В»Р В Р’ВµР В РІвЂћвЂ“Р РЋР С“Р В РЎвЂќР В Р’В°Р РЋР РЏ Р РЋРІвЂљВ¬Р В РЎвЂќР В Р’В°Р В Р’В»Р В Р’В° Р В Р вЂ Р РЋР вЂљР В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р В РЎвЂ</title>
+
+
+
   <style>
+
+
+
     :root {
+
+
+
       color-scheme: light;
+
+
+
       font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+
+
+
+      --panel-bg: #0f172a;
+
+
+
+      --board-bg: rgba(248, 250, 252, 0.94);
+
+
+
+      --line-color: #1f2937;
+
+
+
+      --tick-color: #0ea5e9;
+
+
+
+      --muted: #64748b;
+
+
+
+      --shape-shadow: 0 18px 32px rgba(15, 23, 42, 0.22);
+
+
+
+      --handle-color: rgba(14, 165, 233, 0.85);
+
+
+
+      --handle-size: 12px;
+
+
+
+      --arrow-green: #22c55e;
+
+
+
+      --arrow-yellow: #facc15;
+
+
+
+      --arrow-red: #ef4444;
+
+
+
     }
+
+
+
+
+
+
+
     *, *::before, *::after { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; }
+
+
+
+
+
+
+
+    html, body {
+
+
+
+      height: 100%;
+
+
+
+      margin: 0;
+
+
+
+    }
+
+
+
+
+
+
+
     body {
-      display: grid;
-      place-items: center;
-      background: radial-gradient(circle at 18% 18%, #e0f2fe, #bfdbfe 45%, #a5b4fc 85%);
-      padding: 24px;
-    }
-    .board {
-      position: relative;
-      width: min(92vw, 680px);
-      height: min(88vh, 460px);
-      background: rgba(255, 255, 255, 0.82);
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      border-radius: 32px;
-      box-shadow: 0 40px 60px rgba(15, 23, 42, 0.28);
+
+
+
+      display: flex;
+
+
+
+      gap: clamp(16px, 4vw, 32px);
+
+
+
+      padding: clamp(16px, 4vw, 32px) clamp(24px, 6vw, 56px);
+
+
+
+      padding-left: clamp(160px, 22vw, 320px);
+
+
+
+      background: linear-gradient(135deg, #e0f2fe, #c7d2fe 55%, #f5f3ff);
+
+
+
       overflow: hidden;
-      touch-action: none;
-    }
-    .hint {
-      position: absolute;
-      inset: 18px;
-      font-size: 0.95rem;
-      line-height: 1.45;
-      color: #475569;
-      pointer-events: none;
-    }
-    .shape {
-      position: absolute;
-      display: grid;
-      place-items: center;
-      font-weight: 600;
+
+
+
       color: #0f172a;
-      user-select: none;
-      cursor: grab;
+
+
+
+    }
+
+
+
+
+
+
+
+    .tools-panel {
+
+
+
+      position: fixed;
+
+
+
+      top: clamp(24px, 5vh, 48px);
+
+
+
+      left: clamp(24px, 5vw, 48px);
+
+
+
+      width: clamp(140px, 18vw, 220px);
+
+
+
+      display: grid;
+
+
+
+      gap: 18px;
+
+
+
+      padding: 24px;
+
+
+
+      border-radius: 28px;
+
+
+
+      background: rgba(15, 23, 42, 0.86);
+
+
+
+      color: #e2e8f0;
+
+
+
+      box-shadow: 0 32px 60px rgba(15, 23, 42, 0.35);
+
+
+
+      backdrop-filter: blur(12px);
+
+
+
+      z-index: 40;
+
+
+
+    }
+
+
+
+
+
+
+
+    .tools-panel h2 {
+
+
+
+      margin: 0;
+
+
+
+      font-size: 1.05rem;
+
+
+
+      font-weight: 600;
+
+
+
+    }
+
+
+
+
+
+
+
+    .tools-panel__group {
+
+
+
+      display: grid;
+
+
+
+      gap: 12px;
+
+
+
+    }
+
+
+
+
+
+
+
+    .tool-button {
+
+
+
+      display: flex;
+
+
+
+      align-items: center;
+
+
+
+      gap: 12px;
+
+
+
+      border: 1px solid rgba(226, 232, 240, 0.18);
+
+
+
+      border-radius: 18px;
+
+
+
+      padding: 12px;
+
+
+
+      background: rgba(15, 23, 42, 0.55);
+
+
+
+      color: inherit;
+
+
+
+      font-size: 0.92rem;
+
+
+
+      font-weight: 600;
+
+
+
+      cursor: pointer;
+
+
+
+      transition: transform 0.2s ease, border-color 0.2s ease;
+
+
+
+    }
+
+
+
+
+
+
+
+    .tool-button:hover,
+
+
+
+    .tool-button[aria-pressed="true"] {
+
+
+
+      border-color: rgba(148, 163, 184, 0.6);
+
+
+
+      transform: translateY(-2px);
+
+
+
+    }
+
+
+
+
+
+
+
+    .tool-preview {
+
+
+
+      display: grid;
+
+
+
+      place-items: center;
+
+
+
+      width: 42px;
+
+
+
+      height: 42px;
+
+
+
+      border-radius: 14px;
+
+
+
+      background: rgba(15, 23, 42, 0.42);
+
+
+
+    }
+
+
+
+
+
+
+
+    .color-palette {
+
+
+
+      display: flex;
+
+
+
+      gap: 10px;
+
+
+
+    }
+
+
+
+
+
+
+
+    .color-swatch {
+
+
+
+      width: 26px;
+
+
+
+      height: 26px;
+
+
+
+      border-radius: 50%;
+
+
+
+      border: 2px solid rgba(255, 255, 255, 0.35);
+
+
+
+      cursor: pointer;
+
+
+
+      transition: transform 0.2s ease, border-color 0.2s ease;
+
+
+
+    }
+
+
+
+
+
+
+
+    .color-swatch[aria-pressed="true"] {
+
+
+
+      transform: scale(1.05);
+
+
+
+      border-color: #f8fafc;
+
+
+
+    }
+
+
+
+
+
+
+
+    .workspace-container {
+
+
+
+      flex: 1;
+
+
+
+      display: flex;
+
+
+
+      flex-direction: column;
+
+
+
+      gap: 16px;
+
+
+
+      min-height: 0;
+
+
+
+    }
+
+
+
+
+
+
+
+    .workspace-toolbar {
+
+
+
+      display: flex;
+
+
+
+      justify-content: flex-end;
+
+
+
+    }
+
+
+
+
+
+
+
+    .zoom-controls {
+
+
+
+      display: inline-flex;
+
+
+
+      align-items: center;
+
+
+
+      gap: 10px;
+
+
+
+      padding: 10px 16px;
+
+
+
+      background: rgba(15, 23, 42, 0.78);
+
+
+
+      color: #f8fafc;
+
+
+
+      border-radius: 999px;
+
+
+
+      box-shadow: 0 18px 30px rgba(15, 23, 42, 0.28);
+
+
+
+      backdrop-filter: blur(8px);
+
+
+
+      font-size: 0.95rem;
+
+
+
+    }
+
+
+
+
+
+
+
+    .zoom-controls button {
+
+
+
+      width: 32px;
+
+
+
+      height: 32px;
+
+
+
+      border-radius: 50%;
+
+
+
+      border: 0;
+
+
+
+      background: rgba(255, 255, 255, 0.2);
+
+
+
+      color: inherit;
+
+
+
+      cursor: pointer;
+
+
+
+      font-size: 1.3rem;
+
+
+
+      display: grid;
+
+
+
+      place-items: center;
+
+
+
+      line-height: 1;
+
+
+
+      transition: background 0.2s ease;
+
+
+
+    }
+
+
+
+
+
+
+
+    .zoom-controls button:active {
+
+
+
+      background: rgba(255, 255, 255, 0.35);
+
+
+
+    }
+
+
+
+
+
+
+
+    .zoom-controls input[type="range"] {
+
+
+
+      width: clamp(120px, 20vw, 200px);
+
+
+
+      accent-color: #38bdf8;
+
+
+
+    }
+
+
+
+
+
+
+
+    .zoom-controls__value {
+
+
+
+      width: 48px;
+
+
+
+      text-align: right;
+
+
+
+    }
+
+
+
+
+
+
+
+    .workspace-viewport {
+
+
+
+      position: relative;
+
+
+
+      flex: 1;
+
+
+
+      border-radius: 40px;
+
+
+
+      border: 1px solid rgba(148, 163, 184, 0.35);
+
+
+
+      box-shadow: 0 40px 60px rgba(15, 23, 42, 0.18);
+
+
+
+      overflow: auto;
+
+
+
+      background: transparent;
+
+
+
+      padding: clamp(24px, 6vw, 48px);
+
+
+
+    }
+
+
+
+
+
+
+
+    .workspace-viewport::-webkit-scrollbar { width: 10px; height: 10px; }
+
+
+
+    .workspace-viewport::-webkit-scrollbar-thumb {
+
+
+
+      background: rgba(15, 23, 42, 0.35);
+
+
+
+      border-radius: 999px;
+
+
+
+    }
+
+
+
+
+
+
+
+    .workspace {
+
+
+
+      position: relative;
+
+
+
+      min-height: 100%;
+
+
+
+      width: min(1280px, 100%);
+
+
+
+      margin: 0 auto;
+
+
+
+      background: var(--board-bg);
+
+
+
+      border-radius: clamp(24px, 3vw, 40px);
+
+
+
+      box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.2);
+
+
+
+      display: flex;
+
+
+
+      justify-content: center;
+
+
+
+      align-items: flex-start;
+
+
+
+      padding: clamp(32px, 5vw, 48px) 0;
+
+
+
+    }
+
+
+
+
+
+
+
+    .workspace-canvas {
+
+
+
+      position: relative;
+
+
+
+      width: clamp(520px, 46vw, 680px);
+
+
+
+      min-height: 100%;
+
+
+
+      transform-origin: top center;
+
+
+
       touch-action: none;
-      transition: box-shadow 0.35s ease, transform 0.2s ease;
+
+
+
+      display: flex;
+
+
+
+      justify-items: center;
+
+
+
+      justify-content: center;
+
+
+
     }
-    .shape:active {
-      cursor: grabbing;
-      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.22);
-    }
-    .shape--magnetized {
-      transform: scale(1.04);
-      box-shadow: 0 16px 40px rgba(30, 64, 175, 0.25);
-    }
-    .shape--rect {
-      width: 180px;
-      height: 120px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-      color: #f0f9ff;
-      left: 44px;
-      top: 48px;
-    }
-    .shape--circle {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #f97316, #fde68a);
-      left: 320px;
-      top: 210px;
-    }
-    .snap-indicator {
-      position: absolute;
-      width: 68px;
-      height: 68px;
-      border-radius: 50%;
-      border: 2px dashed rgba(59, 130, 246, 0.55);
-      background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0) 70%);
+
+
+
+
+
+
+
+    .timeline-scale {
+
+
+
+      position: relative;
+
+
+
+      width: 160px;
+
+
+
+      height: 400cm;
+
+
+
+      padding: 32px 0;
+
+
+
       pointer-events: none;
-      transform: translate(-50%, -50%) scale(0.8);
+
+
+
+    }
+
+
+
+
+
+
+
+    .timeline-scale::before {
+
+
+
+      content: "";
+
+
+
+      position: absolute;
+
+
+
+      left: 50%;
+
+
+
+      top: 32px;
+
+
+
+      bottom: 32px;
+
+
+
+      width: 4px;
+
+
+
+      transform: translateX(-50%);
+
+
+
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.85), rgba(15, 23, 42, 0.9));
+
+
+
+      border-radius: 999px;
+
+
+
+    }
+
+
+
+
+
+
+
+    .tick {
+
+
+
+      position: absolute;
+
+
+
+      left: 50%;
+
+
+
+      transform: translate(-50%, -50%);
+
+
+
+      display: flex;
+
+
+
+      align-items: center;
+
+
+
+      gap: 12px;
+
+
+
+      color: var(--muted);
+
+
+
+      font-size: 0.9rem;
+
+
+
+      font-weight: 500;
+
+
+
+      letter-spacing: 0.01em;
+
+
+
+      white-space: nowrap;
+
+
+
+    }
+
+
+
+
+
+
+
+    .tick__line {
+
+
+
+      display: block;
+
+
+
+      height: 1px;
+
+
+
+      background: var(--tick-color);
+
+
+
+      transition: width 0.2s ease;
+
+
+
+    }
+
+
+
+
+
+
+
+    .tick--major .tick__line {
+
+
+
+      width: 90px;
+
+
+
+      height: 2px;
+
+
+
+      background: var(--line-color);
+
+
+
+    }
+
+
+
+
+
+
+
+    .tick--minor .tick__line {
+
+
+
+      width: 60px;
+
+
+
+      opacity: 0.7;
+
+
+
+    }
+
+
+
+
+
+
+
+    .tick--micro .tick__line {
+
+
+
+      width: 36px;
+
+
+
+      opacity: 0.35;
+
+
+
+    }
+
+
+
+
+
+
+
+    .tick--mini .tick__line {
+
+
+
+      width: 18px;
+
+
+
+      opacity: 0.2;
+
+
+
+    }
+
+
+
+
+
+
+
+    .tick--major {
+
+
+
+      color: #0f172a;
+
+
+
+      font-size: 1rem;
+
+
+
+    }
+
+
+
+
+
+
+
+    .legend {
+
+
+
+      position: sticky;
+
+
+
+      top: clamp(12px, 4vh, 24px);
+
+
+
+      align-self: center;
+
+
+
+      background: rgba(15, 23, 42, 0.82);
+
+
+
+      color: #f8fafc;
+
+
+
+      padding: 10px 16px;
+
+
+
+      border-radius: 999px;
+
+
+
+      font-size: 0.95rem;
+
+
+
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.35);
+
+
+
+      backdrop-filter: blur(10px);
+
+
+
+      z-index: 5;
+
+
+
+    }
+
+
+
+
+
+
+
+    .year-nav {
+
+
+
+      position: fixed;
+
+
+
+      top: 50%;
+
+
+
+      right: clamp(16px, 4vw, 52px);
+
+
+
+      transform: translateY(-50%);
+
+
+
+      display: grid;
+
+
+
+      gap: 12px;
+
+
+
+      padding: 14px;
+
+
+
+      border-radius: 24px;
+
+
+
+      background: rgba(15, 23, 42, 0.82);
+
+
+
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.32);
+
+
+
+      backdrop-filter: blur(12px);
+
+
+
+      z-index: 30;
+
+
+
+    }
+
+
+
+
+
+
+
+    .year-nav button {
+
+
+
+      border: 0;
+
+
+
+      border-radius: 16px;
+
+
+
+      padding: 10px 14px;
+
+
+
+      background: rgba(255, 255, 255, 0.12);
+
+
+
+      color: #f8fafc;
+
+
+
+      font-size: 0.9rem;
+
+
+
+      font-weight: 600;
+
+
+
+      cursor: pointer;
+
+
+
+      transition: background 0.2s ease, transform 0.2s ease;
+
+
+
+    }
+
+
+
+
+
+
+
+    .year-nav button:hover {
+
+
+
+      background: rgba(255, 255, 255, 0.22);
+
+
+
+    }
+
+
+
+
+
+
+
+    .year-nav button:active {
+
+
+
+      transform: translateY(1px);
+
+
+
+    }
+
+
+
+
+
+
+
+    .shape {
+
+
+
+      position: absolute;
+
+
+
+      top: 0;
+
+
+
+      left: 0;
+
+
+
+      user-select: none;
+
+
+
+      cursor: grab;
+
+
+
+      z-index: 12;
+
+
+
+      transition: box-shadow 0.2s ease;
+
+
+
+    }
+
+
+
+
+
+
+
+    .shape:active {
+
+
+
+      cursor: grabbing;
+
+
+
+    }
+
+
+
+
+
+
+
+    .shape--selected {
+
+
+
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.55);
+
+
+
+      border-radius: 18px;
+
+
+
+    }
+
+
+
+
+
+
+
+    .shape__body {
+
+
+
+      position: relative;
+
+
+
+      width: 100%;
+
+
+
+      height: 100%;
+
+
+
+      pointer-events: none;
+
+
+
+    }
+
+
+
+
+
+
+
+    .shape__handle {
+
+
+
+      position: absolute;
+
+
+
+      width: var(--handle-size);
+
+
+
+      height: var(--handle-size);
+
+
+
+      border-radius: 50%;
+
+
+
+      background: transparent;
+
+
+
+      border: 0;
+
+
+
       opacity: 0;
-      transition: opacity 0.15s ease, transform 0.2s ease;
+
+
+
+      pointer-events: auto;
+
+
+
+      transition: transform 0.15s ease;
+
+
+
     }
-    .snap-indicator.visible {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
+
+
+
+
+
+
+
+    .shape__handle:active {
+
+
+
+      transform: scale(0.9);
+
+
+
     }
+
+
+
+
+
+
+
+    .shape__handle--top,
+
+
+
+    .shape__handle--bottom {
+
+
+
+      cursor: ns-resize;
+
+
+
+    }
+
+
+
+
+
+
+
+    .shape__handle--left,
+
+
+
+    .shape__handle--right {
+
+
+
+      cursor: ew-resize;
+
+
+
+    }
+
+
+
+
+
+
+
+    .shape__handle--top {
+
+
+
+      top: -10px;
+
+
+
+      left: 50%;
+
+
+
+      transform: translateX(-50%);
+
+
+
+    }
+
+
+
+
+
+
+
+    .shape__handle--bottom {
+
+
+
+      bottom: -10px;
+
+
+
+      left: 50%;
+
+
+
+      transform: translateX(-50%);
+
+
+
+    }
+
+
+
+
+
+
+
+    .shape__handle--left {
+
+
+
+      left: -10px;
+
+
+
+      top: 50%;
+
+
+
+      transform: translateY(-50%);
+
+
+
+    }
+
+
+
+
+
+
+
+    .shape__handle--right {
+
+
+
+      right: -10px;
+
+
+
+      top: 50%;
+
+
+
+      transform: translateY(-50%);
+
+
+
+    }
+
+
+
+
+
+
+
+    .arrow-shaft {
+
+
+
+      position: absolute;
+
+
+
+      bottom: 0;
+
+
+
+      left: 50%;
+
+
+
+      width: 12px;
+
+
+
+      transform: translateX(-50%);
+
+
+
+      background: var(--arrow-color, var(--arrow-green));
+
+
+
+      border-radius: 6px;
+
+
+
+    }
+
+
+
+
+
+
+
+    .arrow-head {
+
+
+
+      position: absolute;
+
+
+
+      left: 50%;
+
+
+
+      transform: translateX(-50%);
+
+
+
+      width: 0;
+
+
+
+      height: 0;
+
+
+
+      border-left: 12px solid transparent;
+
+
+
+      border-right: 12px solid transparent;
+
+
+
+      border-bottom: 26px solid var(--arrow-color, var(--arrow-green));
+
+
+
+    }
+
+
+
+
+
+
+
+    .arrow-head--bottom {
+
+
+
+      top: auto;
+
+
+
+      bottom: 0;
+
+
+
+      border-bottom: none;
+
+
+
+      border-top: 26px solid var(--arrow-color, var(--arrow-green));
+
+
+
+    }
+
+
+
+
+
+
+
+    .shape--arrow-up .arrow-shaft {
+
+
+
+      top: 26px;
+
+
+
+      height: calc(100% - 26px);
+
+
+
+    }
+
+
+
+
+
+
+
+    .shape--arrow-both .arrow-shaft {
+
+
+
+      top: 26px;
+
+
+
+      height: calc(100% - 52px);
+
+
+
+    }
+
+
+
+
+
+
+
+    .shape--arrow-both .arrow-head--bottom {
+
+
+
+      bottom: 0;
+
+
+
+    }
+
+
+
+
+
+
+
+    .shape--line .shape__body {
+
+
+
+      height: 2px;
+
+
+
+      background: rgba(15, 23, 42, 0.75);
+
+
+
+      border-radius: 2px;
+
+
+
+    }
+
+
+
+    .shape--arrow-double-slim .arrow-shaft {
+      width: 2px;
+      top: 12px;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--line-color);
+      border-radius: 1px;
+    }
+
+    .shape--arrow-double-slim .arrow-head {
+      top: 0;
+      transform: translate(-50%, -65%);
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 10px solid var(--line-color);
+    }
+
+    .shape--arrow-double-slim .arrow-head--bottom {
+      top: auto;
+      bottom: 0;
+      transform: translate(-50%, 65%);
+      border-bottom: none;
+      border-top: 10px solid var(--line-color);
+    }
+
+
+
+
+
+
+
+
+
+
+    @media (max-width: 1024px) {
+
+
+
+      body {
+
+
+
+        padding-left: clamp(140px, 26vw, 280px);
+
+
+
+      }
+
+
+
+      .workspace-viewport {
+
+
+
+        padding-right: clamp(140px, 20vw, 220px);
+
+
+
+      }
+
+
+
+    }
+
+
+
+
+
+
+
+    @media (max-width: 768px) {
+
+
+
+      body {
+
+
+
+        flex-direction: column;
+
+
+
+        padding: clamp(16px, 4vw, 24px);
+
+
+
+      }
+
+
+
+      .tools-panel {
+
+
+
+        position: static;
+
+
+
+        width: 100%;
+
+
+
+        display: flex;
+
+
+
+        flex-wrap: wrap;
+
+
+
+      }
+
+
+
+      .workspace-viewport {
+
+
+
+        padding: clamp(16px, 4vw, 24px);
+
+
+
+      }
+
+
+
+      .year-nav {
+
+
+
+        position: sticky;
+
+
+
+        top: auto;
+
+
+
+        bottom: clamp(12px, 3vh, 24px);
+
+
+
+        right: auto;
+
+
+
+        margin-left: auto;
+
+
+
+        transform: none;
+
+
+
+        flex-direction: row;
+
+
+
+      }
+
+
+
+    }
+
+
+
   </style>
+
+
+
 </head>
+
+
+
 <body>
-  <div class="board" id="board">
-    <div class="hint">Перетащите фигуры. Когда они окажутся ближе 80&nbsp;px друг к другу, «магниты» подтянут их вместе.</div>
-    <div class="shape shape--rect" data-shape="rectangle">Прямоугольник</div>
-    <div class="shape shape--circle" data-shape="circle">Круг</div>
-    <div class="snap-indicator" id="snap-indicator"></div>
-  </div>
 
-    <script>
-    const board = document.getElementById('board');
-    const shapes = Array.from(board.querySelectorAll('.shape'));
-    const indicator = document.getElementById('snap-indicator');
 
-    const MAGNET_RADIUS = 100; // px ? ???? ??????????
-    const SNAP_OFFSET = 12; // px ? ?????????? ????? ???????? ????? ??????????
-    const MAGNET_STRENGTH = 0.45; // 0..1 ? ????????? ?????? ?????? ??????? ??? ???????????
 
-    let activeShape = null;
-    let pointerId = null;
-    let offsetX = 0;
-    let offsetY = 0;
+  <aside class="tools-panel" id="tools-panel">
 
-    function getCenter(el) {
-      return {
-        x: el.offsetLeft + el.offsetWidth / 2,
-        y: el.offsetTop + el.offsetHeight / 2,
-      };
+
+
+    <h2>Р В Р’ВР В Р вЂ¦Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР РЋРЎвЂњР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р РЋРІР‚в„–</h2>
+
+
+
+    <div class="tools-panel__group">
+
+
+
+      <button type="button" class="tool-button" data-tool="arrow-up" aria-pressed="false">
+
+
+
+        <span class="tool-preview">Р Р†РІР‚В РІР‚В</span>
+
+
+
+        <span>Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂќР В Р’В° Р В Р вЂ Р В Р вЂ Р В Р’ВµР РЋР вЂљР РЋРІР‚В¦</span>
+
+
+
+      </button>
+
+
+
+      <button type="button" class="tool-button" data-tool="arrow-both" aria-pressed="false">
+
+
+
+        <span class="tool-preview">Р Р†РІР‚В РІР‚Сћ</span>
+
+
+
+        <span>Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂќР В Р’В° Р Р†РІР‚В РІР‚Сћ</span>
+
+
+
+      </button>
+
+
+
+      <button type="button" class="tool-button" data-tool="arrow-double-slim" aria-pressed="false">
+
+
+
+        <span class="tool-preview">⇕</span>
+
+
+
+        <span>Стрелка ⇕</span>
+
+
+
+      </button>
+
+
+
+      <button type="button" class="tool-button" data-tool="line" aria-pressed="false">
+
+
+
+        <span class="tool-preview">Р Р†Р вЂљРІР‚Сћ</span>
+
+
+
+        <span>Р В РІР‚С”Р В РЎвЂР В Р вЂ¦Р В РЎвЂР РЋР РЏ</span>
+
+
+
+      </button>
+
+
+
+    </div>
+
+
+
+    <div class="tools-panel__group">
+
+
+
+      <span style="font-size:0.85rem; opacity:0.85;">Р В Р’В¦Р В Р вЂ Р В Р’ВµР РЋРІР‚С™ Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂќР В РЎвЂ</span>
+
+
+
+      <div class="color-palette" role="group" aria-label="Выбор цвета стрелки">
+
+
+
+        <button type="button" class="color-swatch" data-color="green" aria-pressed="true" style="background: var(--arrow-green);"></button>
+
+
+
+        <button type="button" class="color-swatch" data-color="yellow" aria-pressed="false" style="background: var(--arrow-yellow);"></button>
+
+
+
+        <button type="button" class="color-swatch" data-color="red" aria-pressed="false" style="background: var(--arrow-red);"></button>
+
+
+
+      </div>
+
+
+
+    </div>
+
+
+
+  </aside>
+
+
+
+
+
+
+
+  <section class="workspace-container">
+
+
+
+    <div class="workspace-toolbar">
+
+
+
+      <div class="zoom-controls" id="zoom-controls">
+
+
+
+        <button type="button" data-zoom="out" aria-label="Уменьшить масштаб">−</button>
+
+
+
+        <input type="range" id="zoom-slider" min="50" max="200" value="100" />
+
+
+
+        <span class="zoom-controls__value" id="zoom-value">100%</span>
+
+
+
+        <button type="button" data-zoom="in" aria-label="Увеличить масштаб">+</button>
+
+
+
+      </div>
+
+
+
+    </div>
+
+
+
+
+
+
+
+    <div class="workspace-viewport" id="workspace-viewport">
+
+
+
+      <nav class="year-nav" id="year-nav" aria-label="Навигация по шкале">
+
+
+
+        <button type="button" data-year="-4050">Р В РЎСљР В Р’В°Р РЋРІР‚РЋР В Р’В°Р В Р’В»Р В РЎвЂў</button>
+
+
+
+        <button type="button" data-year="-2550">Р Р†РІвЂљВ¬РІР‚в„ў2550</button>
+
+
+
+        <button type="button" data-year="-1050">Р Р†РІвЂљВ¬РІР‚в„ў1050</button>
+
+
+
+        <button type="button" data-year="450">450</button>
+
+
+
+        <button type="button" data-year="2050">2050</button>
+
+
+
+      </nav>
+
+
+
+      <div class="legend">Шкала: верх — 2050 г., низ — 4050 до н.э. (шаг 50, микроделение 10)</div>
+
+
+
+      <div class="workspace" id="workspace">
+
+
+
+        <div class="workspace-canvas" id="workspace-canvas">
+
+
+
+          <div class="timeline-scale" id="timeline-scale"></div>
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+    </div>
+
+
+
+  </section>
+
+
+
+
+
+
+
+  <script type="module">
+
+
+
+    const START_YEAR = -4050;
+
+
+
+    const END_YEAR = 2050;
+
+
+
+    const STEP = 10;
+
+
+
+    const RANGE = END_YEAR - START_YEAR;
+
+
+
+
+
+
+
+    const zoomSlider = document.getElementById('zoom-slider');
+
+
+
+    const zoomValue = document.getElementById('zoom-value');
+
+
+
+    const zoomControls = document.getElementById('zoom-controls');
+
+
+
+    const workspaceCanvas = document.getElementById('workspace-canvas');
+
+
+
+    const workspaceViewport = document.getElementById('workspace-viewport');
+
+
+
+    const timelineScale = document.getElementById('timeline-scale');
+
+
+
+    const yearNav = document.getElementById('year-nav');
+
+
+
+    const toolsPanel = document.getElementById('tools-panel');
+
+
+
+    const toolButtons = toolsPanel.querySelectorAll('[data-tool]');
+
+
+
+    const colorButtons = toolsPanel.querySelectorAll('[data-color]');
+
+
+
+
+
+
+
+    let currentScale = 1;
+
+
+
+    let currentArrowColor = 'green';
+
+
+
+    let selectedShape = null;
+
+
+
+
+
+
+
+    const COLOR_MAP = {
+
+
+
+      green: getComputedStyle(document.documentElement).getPropertyValue('--arrow-green') || '#22c55e',
+
+
+
+      yellow: getComputedStyle(document.documentElement).getPropertyValue('--arrow-yellow') || '#facc15',
+
+
+
+      red: getComputedStyle(document.documentElement).getPropertyValue('--arrow-red') || '#ef4444',
+
+
+
+    };
+
+
+
+
+
+
+
+    const SHAPE_CONFIG = {
+
+
+
+      'arrow-up': { width: 18, height: 240, minHeight: 120, maxHeight: 900 },
+
+
+
+      'arrow-both': { width: 18, height: 280, minHeight: 140, maxHeight: 900 },
+
+
+
+      'arrow-double-slim': { width: 20, height: 260, minHeight: 12, maxHeight: 900 },
+
+
+
+      line: { width: 240, height: 2, minWidth: 80, maxWidth: 900 },
+
+
+
+    };
+
+
+
+
+
+
+
+    const POSITION_PADDING = 8;
+
+
+
+
+
+
+
+    const pointerState = {
+
+
+
+      mode: null,
+
+
+
+      shape: null,
+
+
+
+      pointerId: null,
+
+
+
+      startX: 0,
+
+
+
+      startY: 0,
+
+
+
+      startLeft: 0,
+
+
+
+      startTop: 0,
+
+
+
+      startWidth: 0,
+
+
+
+      startHeight: 0,
+
+
+
+      offsetX: 0,
+
+
+
+      offsetY: 0,
+
+
+
+    };
+
+
+
+
+
+
+
+    function formatYear(value) {
+
+
+
+      if (value < 0) {
+
+
+
+        return `${Math.abs(value)} Р В РўвЂР В РЎвЂў Р В Р вЂ¦.Р РЋР РЉ.`;
+
+
+
+      }
+
+
+
+      return `${value} Р В РЎвЂ“.`;
+
+
+
     }
 
-    function distance(a, b) {
-      return Math.hypot(a.x - b.x, a.y - b.y);
+
+
+
+
+
+
+    function tickClassForYear(year) {
+
+
+
+      if (year % 500 === 0) return 'tick tick--major';
+
+
+
+      if (year % 100 === 0) return 'tick tick--minor';
+
+
+
+      if (year % 50 === 0) return 'tick tick--micro';
+
+
+
+      return 'tick tick--mini';
+
+
+
     }
 
-    function findSnapTarget(movingShape) {
-      const movingCenter = getCenter(movingShape);
-      let bestTarget = null;
-      let minDist = Infinity;
 
-      for (const other of shapes) {
-        if (other === movingShape) continue;
-        const otherCenter = getCenter(other);
-        const dist = distance(movingCenter, otherCenter);
-        if (dist < minDist) {
-          minDist = dist;
-          bestTarget = { element: other, center: otherCenter, distance: dist };
+
+
+
+
+
+    function renderScale() {
+
+
+
+      timelineScale.innerHTML = '';
+
+
+
+
+
+
+
+      for (let year = START_YEAR; year <= END_YEAR; year += STEP) {
+
+
+
+        const ratio = (END_YEAR - year) / RANGE;
+
+
+
+        const tick = document.createElement('div');
+
+
+
+        tick.dataset.year = year;
+
+
+
+
+
+
+
+        let tickClass = 'tick tick--mini';
+
+
+
+        let showLabel = false;
+
+
+
+
+
+
+
+        if (year % 500 === 0) {
+
+
+
+          tickClass = 'tick tick--major';
+
+
+
+          showLabel = true;
+
+
+
+        } else if (year % 100 === 0) {
+
+
+
+          tickClass = 'tick tick--minor';
+
+
+
+          showLabel = true;
+
+
+
+        } else if (year % 50 === 0) {
+
+
+
+          tickClass = 'tick tick--micro';
+
+
+
+          showLabel = true;
+
+
+
         }
-      }
 
-      if (!bestTarget || bestTarget.distance > MAGNET_RADIUS) return null;
 
-      const { element: other, center: otherCenter } = bestTarget;
-      const movingHalfWidth = movingShape.offsetWidth / 2;
-      const movingHalfHeight = movingShape.offsetHeight / 2;
-      const otherHalfWidth = other.offsetWidth / 2;
-      const otherHalfHeight = other.offsetHeight / 2;
 
-      const movingCenter = getCenter(movingShape);
-      const dx = movingCenter.x - otherCenter.x;
-      const dy = movingCenter.y - otherCenter.y;
-      const angle = Math.atan2(dy, dx);
 
-      const targetLeft = other.offsetLeft + otherHalfWidth + Math.cos(angle) * (otherHalfWidth + movingHalfWidth + SNAP_OFFSET) - movingHalfWidth;
-      const targetTop = other.offsetTop + otherHalfHeight + Math.sin(angle) * (otherHalfHeight + movingHalfHeight + SNAP_OFFSET) - movingHalfHeight;
 
-      return { left: targetLeft, top: targetTop, center: otherCenter };
-    }
 
-    function clampPosition({ element, left, top }) {
-      const maxLeft = board.clientWidth - element.offsetWidth;
-      const maxTop = board.clientHeight - element.offsetHeight;
-      return {
-        left: Math.min(Math.max(0, left), maxLeft),
-        top: Math.min(Math.max(0, top), maxTop),
-      };
-    }
 
-    function applySnap(movingShape) {
-      const snap = findSnapTarget(movingShape);
-      if (!snap) {
-        hideIndicator();
-        movingShape.classList.remove('shape--magnetized');
-        return false;
-      }
+        tick.className = tickClass;
 
-      const clamped = clampPosition({ element: movingShape, left: snap.left, top: snap.top });
-      movingShape.style.left = `${clamped.left}px`;
-      movingShape.style.top = `${clamped.top}px`;
-      showIndicator(snap.center.x, snap.center.y);
-      movingShape.classList.add('shape--magnetized');
-      return true;
-    }
 
-    function showIndicator(x, y) {
-      indicator.style.left = `${x}px`;
-      indicator.style.top = `${y}px`;
-      indicator.classList.add('visible');
-    }
 
-    function hideIndicator() {
-      indicator.classList.remove('visible');
-    }
+        tick.style.top = `${ratio * 100}%`;
 
-    function startDrag(event) {
-      if (!event.target.classList.contains('shape')) return;
 
-      activeShape = event.target;
-      pointerId = event.pointerId ?? 'mouse';
 
-      if (activeShape.setPointerCapture) {
-        try {
-          activeShape.setPointerCapture(event.pointerId);
-        } catch (_) {
-          // ??????????: ??????? ????? ?? ???????????? capture (iOS Safari)
+
+
+
+
+        const line = document.createElement('span');
+
+
+
+        line.className = 'tick__line';
+
+
+
+        tick.append(line);
+
+
+
+
+
+
+
+        if (showLabel) {
+
+
+
+          const label = document.createElement('span');
+
+
+
+          label.className = 'tick__label';
+
+
+
+          label.textContent = formatYear(year);
+
+
+
+          tick.append(label);
+
+
+
         }
+
+
+
+
+
+
+
+        timelineScale.appendChild(tick);
+
+
+
       }
 
-      const rect = activeShape.getBoundingClientRect();
-      offsetX = event.clientX - rect.left;
-      offsetY = event.clientY - rect.top;
+
+
     }
 
-    function moveDrag(event) {
-      if (!activeShape) return;
-      const currentPointerId = event.pointerId ?? 'mouse';
-      if (pointerId !== null && currentPointerId !== pointerId) return;
 
-      const boardRect = board.getBoundingClientRect();
-      let newLeft = event.clientX - boardRect.left - offsetX;
-      let newTop = event.clientY - boardRect.top - offsetY;
 
-      const position = clampPosition({ element: activeShape, left: newLeft, top: newTop });
-      newLeft = position.left;
-      newTop = position.top;
 
-      const snap = findSnapTarget(activeShape);
-      if (snap) {
-        showIndicator(snap.center.x, snap.center.y);
-        activeShape.classList.add('shape--magnetized');
-        newLeft = newLeft + (snap.left - newLeft) * MAGNET_STRENGTH;
-        newTop = newTop + (snap.top - newTop) * MAGNET_STRENGTH;
+
+
+
+    function applyZoom(scale) {
+
+
+
+      const clamped = Math.min(Math.max(scale, 0.5), 2.5);
+
+
+
+      currentScale = clamped;
+
+
+
+      workspaceCanvas.style.transform = `scale(${currentScale})`;
+
+
+
+      zoomSlider.value = Math.round(currentScale * 100);
+
+
+
+      zoomValue.textContent = `${Math.round(currentScale * 100)}%`;
+
+
+
+    }
+
+
+
+
+
+
+
+    function scrollToYear(year) {
+
+
+
+      const clampedYear = Math.min(Math.max(year, START_YEAR), END_YEAR);
+
+
+
+      const tick = timelineScale.querySelector(`[data-year="${clampedYear}"]`);
+
+
+
+      if (!tick) return;
+
+
+
+
+
+
+
+      const viewportRect = workspaceViewport.getBoundingClientRect();
+
+
+
+      const tickRect = tick.getBoundingClientRect();
+
+
+
+      const offset = tickRect.top - viewportRect.top;
+
+
+
+      const target = workspaceViewport.scrollTop + offset - workspaceViewport.clientHeight / 2;
+
+
+
+      const maxScroll = workspaceViewport.scrollHeight - workspaceViewport.clientHeight;
+
+
+
+
+
+
+
+      workspaceViewport.scrollTo({
+
+
+
+        top: Math.min(Math.max(target, 0), Math.max(maxScroll, 0)),
+
+
+
+        behavior: 'smooth',
+
+
+
+      });
+
+
+
+    }
+
+
+
+
+
+
+
+    function getLocalPoint(event) {
+
+
+
+      const rect = workspaceCanvas.getBoundingClientRect();
+
+
+
+      return {
+
+
+
+        x: (event.clientX - rect.left) / currentScale,
+
+
+
+        y: (event.clientY - rect.top) / currentScale,
+
+
+
+      };
+
+
+
+    }
+
+
+
+
+
+
+
+    function setShapePosition(shape, left, top) {
+
+
+
+      const width = shape.offsetWidth;
+
+
+
+      const height = shape.offsetHeight;
+
+
+
+      const canvasWidth = workspaceCanvas.offsetWidth;
+
+
+
+      const canvasHeight = workspaceCanvas.offsetHeight;
+
+
+
+      const maxLeft = Math.max(canvasWidth - width, 0);
+
+
+
+      const maxTop = Math.max(canvasHeight - height, 0);
+
+
+
+
+
+
+
+      let clampedLeft = clamp(left, -POSITION_PADDING, maxLeft + POSITION_PADDING);
+
+
+
+      let clampedTop = clamp(top, -POSITION_PADDING, maxTop + POSITION_PADDING);
+
+
+
+
+
+
+
+      if (clampedLeft + width > canvasWidth + POSITION_PADDING) {
+
+
+
+        clampedLeft = canvasWidth + POSITION_PADDING - width;
+
+
+
+      }
+
+
+
+      if (clampedLeft < -POSITION_PADDING) {
+
+
+
+        clampedLeft = -POSITION_PADDING;
+
+
+
+      }
+
+
+
+      if (clampedTop + height > canvasHeight + POSITION_PADDING) {
+
+
+
+        clampedTop = canvasHeight + POSITION_PADDING - height;
+
+
+
+      }
+
+
+
+      if (clampedTop < -POSITION_PADDING) {
+
+
+
+        clampedTop = -POSITION_PADDING;
+
+
+
+      }
+
+
+
+
+
+
+
+      shape.dataset.x = `${clampedLeft}`;
+
+
+
+      shape.dataset.y = `${clampedTop}`;
+
+
+
+      shape.style.left = `${clampedLeft}px`;
+
+
+
+      shape.style.top = `${clampedTop}px`;
+
+
+
+    }
+
+
+
+
+
+
+
+    function setShapeSize(shape, width, height) {
+
+
+
+      if (typeof width === 'number') {
+
+
+
+        shape.style.width = `${width}px`;
+
+
+
+      }
+
+
+
+      if (typeof height === 'number') {
+
+
+
+        shape.style.height = `${height}px`;
+
+
+
+      }
+
+
+
+    }
+
+
+
+
+
+
+
+    function bringToFront(shape) {
+
+
+
+      const maxZ = Array.from(workspaceCanvas.querySelectorAll('.shape'))
+
+
+
+        .reduce((acc, el) => Math.max(acc, parseInt(el.style.zIndex || '12', 10)), 12);
+
+
+
+      shape.style.zIndex = String(maxZ + 1);
+
+
+
+    }
+
+
+
+
+
+
+
+    function clearSelection() {
+
+
+
+      if (selectedShape) {
+
+
+
+        selectedShape.classList.remove('shape--selected');
+
+
+
+        selectedShape = null;
+
+
+
+      }
+
+
+
+    }
+
+
+
+
+
+
+
+    function selectShape(shape) {
+
+
+
+      if (selectedShape === shape) return;
+
+
+
+      clearSelection();
+
+
+
+      selectedShape = shape;
+
+
+
+      shape.classList.add('shape--selected');
+
+
+
+    }
+
+
+
+
+
+
+
+    function setArrowColor(shape, colorKey) {
+
+
+
+      if (!COLOR_MAP[colorKey]) return;
+
+
+
+      shape.style.setProperty('--arrow-color', COLOR_MAP[colorKey]);
+
+
+
+      shape.dataset.color = colorKey;
+
+
+
+    }
+
+
+
+
+
+
+
+    function updateColorControls(colorKey) {
+
+      colorButtons.forEach((button) => {
+        const isActive = button.dataset.color === colorKey;
+        button.setAttribute('aria-pressed', String(isActive));
+      });
+
+    }
+
+function removeSelectedShape() {
+
+
+
+      if (!selectedShape) return;
+
+
+
+      if (pointerState.shape === selectedShape) {
+
+
+
+        pointerState.mode = null;
+
+
+
+        pointerState.shape = null;
+
+
+
+        pointerState.pointerId = null;
+
+
+
+        pointerState.offsetX = 0;
+
+
+
+        pointerState.offsetY = 0;
+
+
+
+      }
+
+
+
+      selectedShape.remove();
+
+
+
+      selectedShape = null;
+
+
+
+    }
+
+
+
+
+
+
+
+    function createArrow(type) {
+
+
+
+      const shape = document.createElement('div');
+
+
+
+      shape.className = `shape shape--${type}`;
+
+
+
+      shape.dataset.type = type;
+
+
+
+      shape.innerHTML = `
+
+
+
+        <div class="shape__body">
+
+
+
+          <div class="arrow-head"></div>
+
+
+
+          <div class="arrow-shaft"></div>
+
+
+
+          ${(type === 'arrow-both' || type === 'arrow-double-slim') ? '<div class="arrow-head arrow-head--bottom"></div>' : ''}
+
+
+
+        </div>
+
+
+
+        <div class="shape__handle shape__handle--top" data-handle="top" aria-label="Укоротить или удлинить"></div>
+
+
+
+        <div class="shape__handle shape__handle--bottom" data-handle="bottom" aria-label="Укоротить или удлинить"></div>
+
+
+
+      `;
+
+
+
+      return shape;
+
+
+
+    }
+
+
+
+
+
+
+
+    function createLine() {
+
+
+
+      const shape = document.createElement('div');
+
+
+
+      shape.className = 'shape shape--line';
+
+
+
+      shape.dataset.type = 'line';
+
+
+
+      shape.innerHTML = `
+
+
+
+        <div class="shape__body"></div>
+
+
+
+        <div class="shape__handle shape__handle--left" data-handle="left" aria-label="Сдвинуть конец"></div>
+
+
+
+        <div class="shape__handle shape__handle--right" data-handle="right" aria-label="Сдвинуть конец"></div>
+
+
+
+      `;
+
+
+
+      return shape;
+
+
+
+    }
+
+
+
+
+
+
+
+        function placeShape(shape, type) {
+
+
+
+      const config = SHAPE_CONFIG[type];
+
+
+
+      setShapeSize(shape, config.width, config.height);
+
+
+
+
+
+
+
+      const canvasWidth = workspaceCanvas.offsetWidth;
+
+
+
+      const shapeWidth = config.width;
+
+
+
+      const shapeHeight = config.height;
+
+
+
+
+
+
+
+      const left = (canvasWidth - shapeWidth) / 2;
+
+
+
+      const localScrollTop = workspaceViewport.scrollTop / currentScale;
+
+
+
+      const centerOffset = workspaceViewport.clientHeight / (2 * currentScale);
+
+
+
+      const top = Math.max(localScrollTop + centerOffset - shapeHeight / 2, 0);
+
+
+
+
+
+
+
+      setShapePosition(shape, left, top);
+
+
+
+      bringToFront(shape);
+
+
+
+      workspaceCanvas.appendChild(shape);
+
+
+
+      selectShape(shape);
+
+
+
+    }
+
+
+
+
+
+
+
+    function createShape(type) {
+
+
+
+      let shape;
+
+
+
+      if (type === 'line') {
+
+        shape = createLine();
+
       } else {
-        hideIndicator();
-        activeShape.classList.remove('shape--magnetized');
-      }
 
-      activeShape.style.left = `${newLeft}px`;
-      activeShape.style.top = `${newTop}px`;
-    }
+        shape = createArrow(type);
 
-    function endDrag(event) {
-      if (!activeShape) return;
-      const currentPointerId = event.pointerId ?? 'mouse';
-      if (pointerId !== null && currentPointerId !== pointerId) return;
+        if (type === 'arrow-up' || type === 'arrow-both') {
 
-      if (!applySnap(activeShape)) {
-        activeShape.classList.remove('shape--magnetized');
-      }
+          setArrowColor(shape, currentArrowColor);
 
-      if (activeShape.releasePointerCapture) {
-        try {
-          activeShape.releasePointerCapture(event.pointerId);
-        } catch (_) {
-          // ??????????, ???? capture ?? ??????????????
         }
+
       }
 
-      activeShape = null;
-      pointerId = null;
+      placeShape(shape, type);
+
+
+
     }
 
-    if ('PointerEvent' in window) {
-      board.addEventListener('pointerdown', (event) => {
-        startDrag(event);
-      });
-      window.addEventListener('pointermove', (event) => {
-        moveDrag(event);
-      });
-      window.addEventListener('pointerup', (event) => {
-        endDrag(event);
-      });
-      window.addEventListener('pointercancel', (event) => {
-        endDrag(event);
-      });
-    } else {
-      // ?????? ??? ?????? ?????????
-      board.addEventListener('mousedown', (event) => {
-        startDrag(event);
-      });
-      window.addEventListener('mousemove', (event) => {
-        moveDrag(event);
-      });
-      window.addEventListener('mouseup', (event) => {
-        endDrag(event);
-      });
 
-      board.addEventListener('touchstart', (event) => {
-        const touch = event.changedTouches[0];
-        const simulated = new MouseEvent('mousedown', {
-          clientX: touch.clientX,
-          clientY: touch.clientY,
-        });
-        simulated.target = event.target;
-        startDrag(simulated);
-      }, { passive: false });
 
-      window.addEventListener('touchmove', (event) => {
-        const touch = event.changedTouches[0];
-        const simulated = new MouseEvent('mousemove', {
-          clientX: touch.clientX,
-          clientY: touch.clientY,
-        });
-        moveDrag(simulated);
+
+
+
+
+    function handleToolClick(event) {
+
+      const button = event.currentTarget;
+      const tool = button.dataset.tool;
+
+      createShape(tool);
+      toolButtons.forEach((btn) => btn.setAttribute('aria-pressed', String(btn === button)));
+
+    }
+
+    toolButtons.forEach((button) => button.addEventListener('click', handleToolClick));
+
+    colorButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const color = button.dataset.color;
+
+        currentArrowColor = color;
+        updateColorControls(color);
+
+        if (selectedShape) {
+          const type = selectedShape.dataset.type;
+          if (type === 'arrow-up' || type === 'arrow-both') {
+            setArrowColor(selectedShape, color);
+          }
+        }
+      });
+    });
+
+window.addEventListener('keydown', handleKeyDown);
+
+
+
+
+
+
+
+    function clamp(value, min, max) {
+
+
+
+      return Math.min(Math.max(value, min), max);
+
+
+
+    }
+
+
+
+
+
+
+
+    function handleKeyDown(event) {
+
+
+
+      if (!selectedShape) return;
+
+
+
+      const target = event.target;
+
+
+
+      if (target instanceof HTMLElement) {
+
+
+
+        const tag = target.tagName;
+
+
+
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable) {
+
+
+
+          return;
+
+
+
+        }
+
+
+
+      }
+
+
+
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+
+
+
         event.preventDefault();
-      }, { passive: false });
 
-      window.addEventListener('touchend', (event) => {
-        const touch = event.changedTouches[0];
-        const simulated = new MouseEvent('mouseup', {
-          clientX: touch.clientX,
-          clientY: touch.clientY,
-        });
-        endDrag(simulated);
-      });
+
+
+        removeSelectedShape();
+
+
+
+      }
+
+
+
     }
+
+
+
+
+
+
+
+    function handlePointerDown(event) {
+
+
+
+      if (!(event.target instanceof Element)) return;
+
+
+
+      const handle = event.target.closest('[data-handle]');
+
+
+
+      const shape = event.target.closest('.shape');
+
+
+
+
+
+
+
+      if (!shape || !workspaceCanvas.contains(shape)) {
+
+
+
+        clearSelection();
+
+
+
+        return;
+
+
+
+      }
+
+
+
+
+
+
+
+      event.preventDefault();
+
+
+
+      selectShape(shape);
+
+
+
+      bringToFront(shape);
+
+
+
+
+
+
+
+      const local = getLocalPoint(event);
+
+
+
+      pointerState.shape = shape;
+
+
+
+      pointerState.pointerId = event.pointerId ?? 'mouse';
+
+
+
+      pointerState.startX = local.x;
+
+
+
+      pointerState.startY = local.y;
+
+
+
+      pointerState.startLeft = parseFloat(shape.dataset.x || '0');
+
+
+
+      pointerState.startTop = parseFloat(shape.dataset.y || '0');
+
+
+
+      pointerState.startWidth = shape.offsetWidth;
+
+
+
+      pointerState.startHeight = shape.offsetHeight;
+
+
+
+
+
+
+
+      if (handle) {
+
+
+
+        pointerState.mode = handle.dataset.handle;
+
+
+
+      } else {
+
+
+
+        pointerState.mode = 'move';
+
+
+
+        pointerState.offsetX = local.x - pointerState.startLeft;
+
+
+
+        pointerState.offsetY = local.y - pointerState.startTop;
+
+
+
+      }
+
+
+
+
+
+
+
+      if (shape.setPointerCapture && event.pointerId !== undefined) {
+
+
+
+        try {
+
+
+
+          shape.setPointerCapture(event.pointerId);
+
+
+
+        } catch (_) {
+
+
+
+          /* ignore */
+
+
+
+        }
+
+
+
+      }
+
+
+
+    }
+
+
+
+
+
+
+
+    function handlePointerMove(event) {
+
+
+
+      if (!pointerState.shape || pointerState.pointerId === null) return;
+
+
+
+      if (event.pointerId !== undefined && pointerState.pointerId !== 'mouse' && event.pointerId !== pointerState.pointerId) return;
+
+
+
+
+
+
+
+      const shape = pointerState.shape;
+
+
+
+      const type = shape.dataset.type;
+
+
+
+      const local = getLocalPoint(event);
+
+
+
+
+
+
+
+      if (pointerState.mode === 'move') {
+
+
+
+        const newLeft = local.x - pointerState.offsetX;
+
+
+
+        const newTop = local.y - pointerState.offsetY;
+
+
+
+        setShapePosition(shape, newLeft, newTop);
+
+
+
+        return;
+
+
+
+      }
+
+
+
+
+
+
+
+      const config = SHAPE_CONFIG[type];
+
+
+
+      if (!config) return;
+
+
+
+
+
+
+
+      if (pointerState.mode === 'top') {
+
+
+
+        const delta = local.y - pointerState.startY;
+
+
+
+        const nextHeight = clamp(pointerState.startHeight - delta, config.minHeight, config.maxHeight);
+
+
+
+        const heightDelta = pointerState.startHeight - nextHeight;
+
+
+
+        const nextTop = pointerState.startTop + heightDelta;
+
+
+
+        setShapeSize(shape, null, nextHeight);
+
+
+
+        setShapePosition(shape, pointerState.startLeft, nextTop);
+
+
+
+      } else if (pointerState.mode === 'bottom') {
+
+
+
+        const delta = local.y - pointerState.startY;
+
+
+
+        const nextHeight = clamp(pointerState.startHeight + delta, config.minHeight, config.maxHeight);
+
+
+
+        setShapeSize(shape, null, nextHeight);
+
+
+
+      } else if (pointerState.mode === 'left') {
+
+
+
+        const delta = local.x - pointerState.startX;
+
+
+
+        const rightEdge = pointerState.startLeft + pointerState.startWidth;
+
+
+
+        let newLeft = pointerState.startLeft + delta;
+
+
+
+        const minWidth = config.minWidth ?? 20;
+
+
+
+        const maxWidth = config.maxWidth ?? Infinity;
+
+
+
+
+
+
+
+        newLeft = clamp(newLeft, -POSITION_PADDING, rightEdge - minWidth);
+
+
+
+        let width = rightEdge - newLeft;
+
+
+
+        const canvasWidth = workspaceCanvas.offsetWidth;
+
+
+
+        const maxByCanvas = Math.max(canvasWidth + POSITION_PADDING - newLeft, minWidth);
+
+
+
+        width = clamp(width, minWidth, Math.min(maxWidth, maxByCanvas));
+
+
+
+        newLeft = clamp(newLeft, -POSITION_PADDING, canvasWidth + POSITION_PADDING - width);
+
+
+
+
+
+
+
+        setShapeSize(shape, width, null);
+
+
+
+        setShapePosition(shape, newLeft, pointerState.startTop);
+
+
+
+      } else if (pointerState.mode === 'right') {
+
+
+
+        const delta = local.x - pointerState.startX;
+
+
+
+        const minWidth = config.minWidth ?? 20;
+
+
+
+        const maxWidth = config.maxWidth ?? Infinity;
+
+
+
+        const canvasWidth = workspaceCanvas.offsetWidth;
+
+
+
+        const maxByCanvas = Math.max(canvasWidth + POSITION_PADDING - pointerState.startLeft, minWidth);
+
+
+
+        const width = clamp(pointerState.startWidth + delta, minWidth, Math.min(maxWidth, maxByCanvas));
+
+
+
+        setShapeSize(shape, width, null);
+
+
+
+        const newLeft = clamp(pointerState.startLeft, -POSITION_PADDING, canvasWidth + POSITION_PADDING - width);
+
+
+
+        setShapePosition(shape, newLeft, pointerState.startTop);
+
+
+
+      }
+
+
+
+    }
+
+
+
+
+
+
+
+    function handlePointerUp(event) {
+
+
+
+      if (!pointerState.shape) return;
+
+
+
+      if (event.pointerId !== undefined && pointerState.pointerId !== 'mouse' && event.pointerId !== pointerState.pointerId) return;
+
+
+
+
+
+
+
+      if (pointerState.shape.releasePointerCapture && event.pointerId !== undefined) {
+
+
+
+        try {
+
+
+
+          pointerState.shape.releasePointerCapture(event.pointerId);
+
+
+
+        } catch (_) {
+
+
+
+          /* ignore */
+
+
+
+        }
+
+
+
+      }
+
+
+
+
+
+
+
+      pointerState.mode = null;
+
+
+
+      pointerState.shape = null;
+
+
+
+      pointerState.pointerId = null;
+
+
+
+      pointerState.offsetX = 0;
+
+
+
+      pointerState.offsetY = 0;
+
+
+
+    }
+
+
+
+
+
+
+
+    workspaceCanvas.addEventListener('pointerdown', handlePointerDown);
+
+
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: false });
+
+
+
+    window.addEventListener('pointerup', handlePointerUp);
+
+
+
+    window.addEventListener('pointercancel', handlePointerUp);
+
+
+
+
+
+
+
+    renderScale();
+
+
+
+    applyZoom(currentScale);
+
+
+
+
+
+
+
+    zoomSlider.addEventListener('input', (event) => {
+
+
+
+      applyZoom(event.target.value / 100);
+
+
+
+    });
+
+
+
+
+
+
+
+    zoomControls.querySelectorAll('button[data-zoom]').forEach((button) => {
+
+
+
+      button.addEventListener('click', () => {
+
+
+
+        const direction = button.dataset.zoom === 'in' ? 1 : -1;
+
+
+
+        applyZoom(currentScale + 0.1 * direction);
+
+
+
+      });
+
+
+
+    });
+
+
+
+
+
+
+
+    workspaceViewport.addEventListener('wheel', (event) => {
+
+
+
+      if (!event.ctrlKey) return;
+
+
+
+      event.preventDefault();
+
+
+
+      const delta = event.deltaY < 0 ? 0.1 : -0.1;
+
+
+
+      applyZoom(currentScale + delta);
+
+
+
+    }, { passive: false });
+
+
+
+
+
+
+
+    yearNav.querySelectorAll('button[data-year]').forEach((button) => {
+
+
+
+      button.addEventListener('click', () => {
+
+
+
+        const year = Number(button.dataset.year);
+
+
+
+        scrollToYear(year);
+
+
+
+      });
+
+
+
+    });
+
+
+
   </script>
 
+
+
 </body>
+
+
+
 </html>
+
+
+
+
+
