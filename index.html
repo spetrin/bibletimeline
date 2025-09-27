@@ -2565,6 +2565,25 @@
 
 
 
+    const STORAGE_KEY = 'timeline-workspace-state-v1';
+    const SAVE_DEBOUNCE_MS = 300;
+    let saveTimerId = null;
+    let isRestoringState = false;
+
+    const storageAvailable = (() => {
+      try {
+        const testKey = '__timeline_state_test__';
+        window.localStorage.setItem(testKey, '1');
+        window.localStorage.removeItem(testKey);
+        return true;
+      } catch (error) {
+        console.warn('Lokaler Speicher steht nicht zur Verfuegung, Fortschritt wird nicht gespeichert.', error);
+        return false;
+      }
+    })();
+
+
+
 
 
 
@@ -3180,6 +3199,8 @@
 
       updateLabelControls(null);
 
+      scheduleSave();
+
     }
 
 
@@ -3238,6 +3259,192 @@
         const isActive = button.dataset.color === colorKey;
         button.setAttribute('aria-pressed', String(isActive));
       });
+
+    }
+
+    function serializeShape(shape) {
+
+      if (!shape) return null;
+      const type = shape.dataset.type;
+      if (!type) return null;
+
+      const width = Math.round(shape.offsetWidth);
+      const height = Math.round(shape.offsetHeight);
+      const rawX = shape.dataset.x ?? shape.style.left ?? '0';
+      const rawY = shape.dataset.y ?? shape.style.top ?? '0';
+      const x = Number.parseFloat(rawX) || 0;
+      const y = Number.parseFloat(rawY) || 0;
+      const zIndexValue = Number.parseInt(shape.style.zIndex || '0', 10);
+
+      const data = {
+        type,
+        x,
+        y,
+        width,
+        height,
+        zIndex: Number.isFinite(zIndexValue) ? zIndexValue : 0,
+      };
+
+      if (shape.dataset.color) {
+        data.color = shape.dataset.color;
+      }
+
+      if (type === 'label') {
+        const editor = shape.querySelector('.label-editor');
+        data.text = editor ? editor.textContent || '' : '';
+        data.fontSize = Number(shape.dataset.fontSize) || 14;
+        data.orientation = shape.dataset.orientation === 'vertical' ? 'vertical' : 'horizontal';
+      } else if (type === 'image') {
+        const img = shape.querySelector('img');
+        if (!img || !img.src) {
+          return null;
+        }
+        data.src = img.src;
+        data.alt = img.alt || '';
+        if (shape.dataset.aspect) {
+          const aspect = Number.parseFloat(shape.dataset.aspect);
+          if (Number.isFinite(aspect)) {
+            data.aspect = aspect;
+          }
+        }
+      }
+
+      return data;
+
+    }
+
+    function serializeWorkspace() {
+
+      const shapes = Array.from(workspaceCanvas.querySelectorAll('.shape'))
+        .map(serializeShape)
+        .filter(Boolean);
+
+      return {
+        version: 1,
+        scale: currentScale,
+        scrollTop: workspaceViewport.scrollTop,
+        shapes,
+      };
+
+    }
+
+    function saveWorkspaceState() {
+
+      if (!storageAvailable || isRestoringState) return;
+      try {
+        const state = serializeWorkspace();
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (error) {
+        console.warn('Speichern des Arbeitsbereichs ist fehlgeschlagen.', error);
+      }
+
+    }
+
+    function scheduleSave() {
+
+      if (!storageAvailable || isRestoringState) return;
+      if (saveTimerId) {
+        window.clearTimeout(saveTimerId);
+      }
+      saveTimerId = window.setTimeout(saveWorkspaceState, SAVE_DEBOUNCE_MS);
+
+    }
+
+    function createShapeFromState(data) {
+
+      if (!data || !data.type) return null;
+      let shape = null;
+
+      if (data.type === 'line') {
+        shape = createLine();
+      } else if (data.type === 'label') {
+        shape = createLabelShape();
+        const editor = shape.querySelector('.label-editor');
+        if (editor) {
+          editor.textContent = data.text || '';
+          editor.dataset.empty = editor.textContent.trim().length === 0 ? 'true' : 'false';
+        }
+        shape.dataset.fontSize = String(data.fontSize ?? 14);
+        shape.dataset.orientation = data.orientation === 'vertical' ? 'vertical' : 'horizontal';
+        shape.dataset.editing = 'false';
+        applyLabelStyles(shape);
+      } else if (data.type === 'image') {
+        if (!data.src) return null;
+        shape = createImageShape(data.src, data.alt || '');
+        if (typeof data.aspect === 'number' && Number.isFinite(data.aspect)) {
+          shape.dataset.aspect = String(data.aspect);
+        }
+      } else {
+        shape = createArrow(data.type);
+        if (data.color) {
+          setArrowColor(shape, data.color);
+        }
+      }
+
+      return shape;
+
+    }
+
+    function restoreWorkspaceState() {
+
+      if (!storageAvailable) return;
+
+      let raw = null;
+      try {
+        raw = window.localStorage.getItem(STORAGE_KEY);
+      } catch (error) {
+        console.warn('Gespeicherter Arbeitsbereich kann nicht gelesen werden.', error);
+        return;
+      }
+
+      if (!raw) return;
+
+      let state = null;
+      try {
+        state = JSON.parse(raw);
+      } catch (error) {
+        console.warn('Gespeicherter Arbeitsbereich ist ungueltig.', error);
+        return;
+      }
+
+      if (!state || !Array.isArray(state.shapes)) return;
+
+      isRestoringState = true;
+
+      workspaceCanvas.querySelectorAll('.shape').forEach((shape) => shape.remove());
+
+      state.shapes.forEach((shapeData) => {
+        const shape = createShapeFromState(shapeData);
+        if (!shape) return;
+
+        workspaceCanvas.appendChild(shape);
+
+        const width = Number.isFinite(shapeData.width) ? shapeData.width : null;
+        const height = Number.isFinite(shapeData.height) ? shapeData.height : null;
+        if (width !== null || height !== null) {
+          setShapeSize(shape, width, height);
+        }
+
+        const x = Number.isFinite(shapeData.x) ? shapeData.x : 0;
+        const y = Number.isFinite(shapeData.y) ? shapeData.y : 0;
+        setShapePosition(shape, x, y);
+
+        if (Number.isFinite(shapeData.zIndex)) {
+          shape.style.zIndex = String(shapeData.zIndex);
+        }
+      });
+
+      clearSelection();
+
+      if (Number.isFinite(state.scale)) {
+        applyZoom(state.scale);
+      }
+
+      if (Number.isFinite(state.scrollTop)) {
+        workspaceViewport.scrollTop = state.scrollTop;
+      }
+
+      isRestoringState = false;
 
     }
 
@@ -3542,6 +3749,7 @@ function removeSelectedShape() {
       editor.dataset.empty = text.trim().length === 0 ? 'true' : 'false';
       applyLabelStyles(shape);
       updateLabelControls(shape);
+      scheduleSave();
     }
 
     function placeCaretAtEnd(node) {
@@ -3562,7 +3770,10 @@ function removeSelectedShape() {
       shape.dataset.fontSize = String(size);
       applyLabelStyles(shape);
       updateLabelControls(shape);
+      scheduleSave();
     }
+
+
 
     function toggleLabelOrientation(shape) {
 
@@ -3572,7 +3783,10 @@ function removeSelectedShape() {
       shape.dataset.orientation = next;
       applyLabelStyles(shape);
       updateLabelControls(shape);
+      scheduleSave();
     }
+
+
 
     function updateLabelControls(shape) {
 
@@ -3600,6 +3814,8 @@ function removeSelectedShape() {
         }
       }
     }
+
+
 
     function placeShape(shape, type, initialSize) {
 
@@ -3715,6 +3931,8 @@ function removeSelectedShape() {
         enterLabelEdit(placedShape);
       }
 
+      scheduleSave();
+
     }
 
 
@@ -3723,7 +3941,7 @@ function removeSelectedShape() {
 
 
 
-    function handleToolClick(event) {
+        function handleToolClick(event) {
 
       const button = event.currentTarget;
       const tool = button.dataset.tool;
@@ -3757,6 +3975,8 @@ function removeSelectedShape() {
             setArrowColor(selectedShape, color);
           }
         }
+
+        scheduleSave();
       });
     });
 
@@ -3764,6 +3984,7 @@ function removeSelectedShape() {
       button.addEventListener('click', () => {
         if (!selectedShape || selectedShape.dataset.type !== 'label') return;
         setLabelFontSize(selectedShape, button.dataset.fontSize);
+        scheduleSave();
       });
     });
 
@@ -3771,6 +3992,7 @@ function removeSelectedShape() {
       labelOrientationBtn.addEventListener('click', () => {
         if (!selectedShape || selectedShape.dataset.type !== 'label') return;
         toggleLabelOrientation(selectedShape);
+        scheduleSave();
       });
     }
 
@@ -3852,6 +4074,7 @@ function removeSelectedShape() {
             const shape = createImageShape(result, altText);
             shape.dataset.aspect = (width / height).toFixed(4);
             placeShape(shape, 'image', { width, height });
+            scheduleSave();
             imageInput.value = '';
           };
           img.onerror = () => {
@@ -4362,78 +4585,37 @@ window.addEventListener('keydown', handleKeyDown);
 
     function handlePointerUp(event) {
 
-
-
       if (!pointerState.shape) return;
-
-
 
       if (event.pointerId !== undefined && pointerState.pointerId !== 'mouse' && event.pointerId !== pointerState.pointerId) return;
 
-
-
-
-
-
-
       if (pointerState.shape.releasePointerCapture && event.pointerId !== undefined) {
-
-
 
         try {
 
-
-
           pointerState.shape.releasePointerCapture(event.pointerId);
-
-
 
         } catch (_) {
 
-
-
           /* ignore */
-
-
 
         }
 
-
-
       }
-
-
-
-
-
-
 
       pointerState.mode = null;
 
-
-
       pointerState.shape = null;
-
-
 
       pointerState.pointerId = null;
 
-
-
       pointerState.offsetX = 0;
-
-
 
       pointerState.offsetY = 0;
 
-
+      scheduleSave();
 
     }
-
-
-
-
-
 
 
     workspaceCanvas.addEventListener('pointerdown', handlePointerDown);
@@ -4467,6 +4649,8 @@ window.addEventListener('keydown', handleKeyDown);
 
     applyZoom(currentScale);
 
+    restoreWorkspaceState();
+
 
 
 
@@ -4475,73 +4659,44 @@ window.addEventListener('keydown', handleKeyDown);
 
     zoomSlider.addEventListener('input', (event) => {
 
-
-
       applyZoom(event.target.value / 100);
-
-
+      scheduleSave();
 
     });
-
-
-
-
 
 
 
     zoomControls.querySelectorAll('button[data-zoom]').forEach((button) => {
 
-
-
       button.addEventListener('click', () => {
-
-
 
         const direction = button.dataset.zoom === 'in' ? 1 : -1;
 
-
-
         applyZoom(currentScale + 0.1 * direction);
-
-
+        scheduleSave();
 
       });
-
-
 
     });
 
 
 
-
-
-
-
     workspaceViewport.addEventListener('wheel', (event) => {
-
-
 
       if (!event.ctrlKey) return;
 
-
-
       event.preventDefault();
-
-
 
       const delta = event.deltaY < 0 ? 0.1 : -0.1;
 
-
-
       applyZoom(currentScale + delta);
-
-
+      scheduleSave();
 
     }, { passive: false });
 
-
-
-
+    workspaceViewport.addEventListener('scroll', () => {
+      scheduleSave();
+    });
 
 
 
