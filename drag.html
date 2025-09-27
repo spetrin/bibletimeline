@@ -6,7 +6,7 @@
 
 
 
-<html lang="ru">
+<html lang="de">
 
 
 
@@ -22,7 +22,7 @@
 
 
 
-  <title>Р В РІР‚ВР В РЎвЂР В Р’В±Р В Р’В»Р В Р’ВµР В РІвЂћвЂ“Р РЋР С“Р В РЎвЂќР В Р’В°Р РЋР РЏ Р РЋРІвЂљВ¬Р В РЎвЂќР В Р’В°Р В Р’В»Р В Р’В° Р В Р вЂ Р РЋР вЂљР В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р В РЎвЂ</title>
+  <title>Zeitleisten-Werkstatt</title>
 
 
 
@@ -818,7 +818,7 @@
 
 
 
-      width: clamp(520px, 46vw, 680px);
+      width: clamp(720px, 60vw, 1024px);
 
 
 
@@ -1728,6 +1728,184 @@
 
     }
 
+    .arrow-fray {
+      position: absolute;
+      left: 50%;
+      width: 100%;
+      height: 22px;
+      transform: translateX(-50%);
+      background: var(--arrow-color, var(--arrow-green));
+      clip-path: polygon(0 100%, 6% 0, 12% 100%, 18% 0, 26% 100%, 34% 0, 42% 100%, 50% 0, 58% 100%, 66% 0, 74% 100%, 82% 0, 90% 100%, 100% 16%, 100% 100%);
+      opacity: 0.95;
+      pointer-events: none;
+    }
+
+    .arrow-fray--top {
+      top: 0;
+    }
+
+    .arrow-fray--bottom {
+      top: auto;
+      bottom: 0;
+      transform: translateX(-50%) scaleY(-1);
+    }
+
+    .shape--segment-open .arrow-shaft {
+      top: 22px;
+      bottom: 22px;
+      height: auto;
+    }
+
+    .shape--image {
+      border-radius: 16px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .shape--label {
+      --label-font-size: 14px;
+      min-width: 140px;
+      min-height: 48px;
+    }
+
+    .shape--label .shape__body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .shape--label[data-orientation="vertical"] .shape__body {
+      padding: 0;
+    }
+
+    .shape--label .label-content {
+      width: 100%;
+      height: 100%;
+      pointer-events: auto;
+    }
+
+    .shape--label .label-editor {
+      position: relative;
+      min-height: 1.2em;
+      font-size: var(--label-font-size, 14px);
+      font-family: inherit;
+      color: var(--line-color);
+      line-height: 1.35;
+      text-align: center;
+      outline: none;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .shape--label .label-editor[data-empty="true"]::before {
+      content: attr(data-placeholder);
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(100, 116, 139, 0.82);
+      pointer-events: none;
+    }
+
+    .shape--label[data-orientation="vertical"] .label-content {
+      writing-mode: vertical-rl;
+    }
+
+    .shape--label[data-orientation="vertical"] .label-editor {
+      transform: rotate(180deg);
+    }
+
+    .tools-panel__group--labels {
+      display: grid;
+      gap: 12px;
+    }
+
+    .label-controls {
+      display: grid;
+      gap: 12px;
+    }
+
+    .label-size {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .label-size__btn,
+    .label-orientation__btn {
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.05);
+      color: #0f172a;
+      font-size: 0.9rem;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .label-size__btn:hover:not(:disabled),
+    .label-orientation__btn:hover:not(:disabled) {
+      border-color: rgba(14, 165, 233, 0.5);
+    }
+
+    .label-size__btn[aria-pressed="true"],
+    .label-orientation__btn[aria-pressed="true"] {
+      border-color: rgba(14, 165, 233, 0.65);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.25);
+      background: rgba(14, 165, 233, 0.12);
+    }
+
+    .label-size__btn:disabled,
+    .label-orientation__btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .label-size__btn:active,
+    .label-orientation__btn:active {
+      transform: translateY(1px);
+    }
+
+    .shape--image .shape__body {
+      overflow: visible;
+    }
+
+    .shape--image .image-frame {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 12px 0 28px rgba(15, 23, 42, 0.24);
+    }
+
+    .shape--image .image-frame::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: inherit;
+    }
+
+    .shape--image img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+
+
+
 
 
 
@@ -1993,7 +2171,7 @@
 
 
 
-    <h2>Р В Р’ВР В Р вЂ¦Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР РЋРЎвЂњР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р РЋРІР‚в„–</h2>
+    <h2>Werkzeuge</h2>
 
 
 
@@ -2005,11 +2183,11 @@
 
 
 
-        <span class="tool-preview">Р Р†РІР‚В РІР‚В</span>
+        <span class="tool-preview">&uarr;</span>
 
 
 
-        <span>Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂќР В Р’В° Р В Р вЂ Р В Р вЂ Р В Р’ВµР РЋР вЂљР РЋРІР‚В¦</span>
+        <span>Breiter Pfeil nach oben</span>
 
 
 
@@ -2021,15 +2199,32 @@
 
 
 
-        <span class="tool-preview">Р Р†РІР‚В РІР‚Сћ</span>
+        <span class="tool-preview">&#8661;</span>
 
 
 
-        <span>Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂќР В Р’В° Р Р†РІР‚В РІР‚Сћ</span>
+        <span>Breiter Doppelpfeil</span>
 
 
 
       </button>
+
+      <button type="button" class="tool-button" data-tool="segment-open" aria-pressed="false">
+        <span class="tool-preview">~~</span>
+        <span>Offener Abschnitt</span>
+      </button>
+
+      <button type="button" class="tool-button" data-tool="label" aria-pressed="false">
+        <span class="tool-preview">Aa</span>
+        <span>Beschriftung</span>
+      </button>
+
+      <button type="button" class="tool-button" data-tool="image" aria-pressed="false">
+        <span class="tool-preview">Img</span>
+        <span>Bild einfuegen</span>
+      </button>
+
+
 
 
 
@@ -2037,11 +2232,11 @@
 
 
 
-        <span class="tool-preview">⇕</span>
+        <span class="tool-preview">&#8661;</span>
 
 
 
-        <span>Стрелка ⇕</span>
+        <span>Feiner Doppelpfeil</span>
 
 
 
@@ -2053,11 +2248,11 @@
 
 
 
-        <span class="tool-preview">Р Р†Р вЂљРІР‚Сћ</span>
+        <span class="tool-preview">&#9472;</span>
 
 
 
-        <span>Р В РІР‚С”Р В РЎвЂР В Р вЂ¦Р В РЎвЂР РЋР РЏ</span>
+        <span>Horizontale Linie</span>
 
 
 
@@ -2073,11 +2268,11 @@
 
 
 
-      <span style="font-size:0.85rem; opacity:0.85;">Р В Р’В¦Р В Р вЂ Р В Р’ВµР РЋРІР‚С™ Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂќР В РЎвЂ</span>
+      <span style="font-size:0.85rem; opacity:0.85;">Farbe fuer breite Pfeile</span>
 
 
 
-      <div class="color-palette" role="group" aria-label="Выбор цвета стрелки">
+      <div class="color-palette" role="group" aria-label="Pfeilfarbe waehlen">
 
 
 
@@ -2101,6 +2296,23 @@
 
 
 
+
+
+    <div class="tools-panel__group tools-panel__group--labels hidden" id="label-controls">
+      <span style="font-size:0.85rem; opacity:0.85;">Einstellungen fuer Text</span>
+      <div class="label-controls">
+        <div class="label-size" role="group" aria-label="Schriftgroesse waehlen">
+          <button type="button" class="label-size__btn" data-font-size="10" aria-pressed="false">10</button>
+          <button type="button" class="label-size__btn" data-font-size="12" aria-pressed="false">12</button>
+          <button type="button" class="label-size__btn" data-font-size="14" aria-pressed="false">14</button>
+          <button type="button" class="label-size__btn" data-font-size="16" aria-pressed="false">16</button>
+          <button type="button" class="label-size__btn" data-font-size="18" aria-pressed="false">18</button>
+        </div>
+        <button type="button" class="label-orientation__btn" data-orientation-toggle aria-pressed="false" aria-label="Ausrichtung wechseln">Horizontal</button>
+      </div>
+    </div>
+
+    <input type="file" id="image-upload-input" accept="image/*" hidden />
   </aside>
 
 
@@ -2121,7 +2333,7 @@
 
 
 
-        <button type="button" data-zoom="out" aria-label="Уменьшить масштаб">−</button>
+        <button type="button" data-zoom="out" aria-label="Verkleinern">-</button>
 
 
 
@@ -2133,7 +2345,7 @@
 
 
 
-        <button type="button" data-zoom="in" aria-label="Увеличить масштаб">+</button>
+        <button type="button" data-zoom="in" aria-label="Vergroessern">+</button>
 
 
 
@@ -2153,35 +2365,16 @@
 
 
 
-      <nav class="year-nav" id="year-nav" aria-label="Навигация по шкале">
-
-
-
-        <button type="button" data-year="-4050">Р В РЎСљР В Р’В°Р РЋРІР‚РЋР В Р’В°Р В Р’В»Р В РЎвЂў</button>
-
-
-
-        <button type="button" data-year="-2550">Р Р†РІвЂљВ¬РІР‚в„ў2550</button>
-
-
-
-        <button type="button" data-year="-1050">Р Р†РІвЂљВ¬РІР‚в„ў1050</button>
-
-
-
-        <button type="button" data-year="450">450</button>
-
-
-
-        <button type="button" data-year="2050">2050</button>
-
-
-
+      <nav class="year-nav" id="year-nav" aria-label="Zeitsprung">
+        <button type="button" data-year="-4050">-4050 v. Chr.</button>
+        <button type="button" data-year="-2550">-2550 v. Chr.</button>
+        <button type="button" data-year="-1050">-1050 v. Chr.</button>
+        <button type="button" data-year="450">450 n. Chr.</button>
+        <button type="button" data-year="2050">2050 n. Chr.</button>
       </nav>
 
 
 
-      <div class="legend">Шкала: верх — 2050 г., низ — 4050 до н.э. (шаг 50, микроделение 10)</div>
 
 
 
@@ -2235,6 +2428,9 @@
 
     const RANGE = END_YEAR - START_YEAR;
 
+    const SEGMENT_OPEN_MIN_YEARS = 10;
+    const SEGMENT_OPEN_MAX_YEARS = 2000;
+
 
 
 
@@ -2273,17 +2469,17 @@
 
 
 
+
+    const imageInput = document.getElementById('image-upload-input');
     const toolButtons = toolsPanel.querySelectorAll('[data-tool]');
 
 
 
     const colorButtons = toolsPanel.querySelectorAll('[data-color]');
 
-
-
-
-
-
+    const labelControls = document.getElementById('label-controls');
+    const labelFontButtons = labelControls ? Array.from(labelControls.querySelectorAll('[data-font-size]')) : [];
+    const labelOrientationBtn = labelControls ? labelControls.querySelector('[data-orientation-toggle]') : null;
 
     let currentScale = 1;
 
@@ -2334,6 +2530,18 @@
 
 
       'arrow-both': { width: 18, height: 280, minHeight: 140, maxHeight: 900 },
+
+
+
+      'segment-open': { width: 18, height: 280, minHeight: 24, maxHeight: 5000 },
+
+
+
+      'label': { width: 220, height: 120, minWidth: 120, maxWidth: 720, minHeight: 48, maxHeight: 480 },
+
+
+
+      image: { width: 280, height: 180, minWidth: 120, maxWidth: 960, minHeight: 80, maxHeight: 720 },
 
 
 
@@ -2425,7 +2633,7 @@
 
 
 
-        return `${Math.abs(value)} Р В РўвЂР В РЎвЂў Р В Р вЂ¦.Р РЋР РЉ.`;
+        return `${Math.abs(value)} v. Chr.`;
 
 
 
@@ -2433,7 +2641,7 @@
 
 
 
-      return `${value} Р В РЎвЂ“.`;
+      return `${value} n. Chr.`;
 
 
 
@@ -2626,6 +2834,24 @@
 
 
     }
+
+    function updateSegmentOpenBounds() {
+
+      const segmentConfig = SHAPE_CONFIG['segment-open'];
+      if (!segmentConfig || !timelineScale) return;
+
+      const styles = getComputedStyle(timelineScale);
+      const paddingTop = parseFloat(styles.paddingTop) || 0;
+      const paddingBottom = parseFloat(styles.paddingBottom) || 0;
+      const usableHeight = timelineScale.clientHeight - paddingTop - paddingBottom;
+      if (usableHeight <= 0) return;
+
+      const pxPerYear = usableHeight / RANGE;
+      segmentConfig.minHeight = Math.max(Math.round(pxPerYear * SEGMENT_OPEN_MIN_YEARS), 8);
+      segmentConfig.maxHeight = Math.max(segmentConfig.minHeight, Math.round(Math.min(pxPerYear * SEGMENT_OPEN_MAX_YEARS, usableHeight)));
+
+    }
+
 
 
 
@@ -2947,23 +3173,12 @@
 
     function clearSelection() {
 
-
-
       if (selectedShape) {
-
-
-
         selectedShape.classList.remove('shape--selected');
-
-
-
         selectedShape = null;
-
-
-
       }
 
-
+      updateLabelControls(null);
 
     }
 
@@ -2975,23 +3190,15 @@
 
     function selectShape(shape) {
 
-
-
       if (selectedShape === shape) return;
-
-
 
       clearSelection();
 
-
-
       selectedShape = shape;
-
-
 
       shape.classList.add('shape--selected');
 
-
+      updateLabelControls(shape);
 
     }
 
@@ -3036,47 +3243,28 @@
 
 function removeSelectedShape() {
 
-
-
       if (!selectedShape) return;
-
-
+      if (selectedShape.dataset && selectedShape.dataset.type === 'label' && selectedShape.dataset.editing === 'true') return;
 
       if (pointerState.shape === selectedShape) {
 
-
-
         pointerState.mode = null;
-
-
 
         pointerState.shape = null;
 
-
-
         pointerState.pointerId = null;
-
-
 
         pointerState.offsetX = 0;
 
-
-
         pointerState.offsetY = 0;
-
-
 
       }
 
-
-
       selectedShape.remove();
-
-
 
       selectedShape = null;
 
-
+      updateLabelControls(null);
 
     }
 
@@ -3102,6 +3290,20 @@ function removeSelectedShape() {
 
 
 
+      const topElement = type === 'segment-open'
+        ? '<div class="arrow-fray arrow-fray--top"></div>'
+        : '<div class="arrow-head"></div>';
+
+
+
+      const bottomElement = type === 'segment-open'
+        ? '<div class="arrow-fray arrow-fray--bottom"></div>'
+        : ((type === 'arrow-both' || type === 'arrow-double-slim')
+          ? '<div class="arrow-head arrow-head--bottom"></div>'
+          : '');
+
+
+
       shape.innerHTML = `
 
 
@@ -3110,7 +3312,7 @@ function removeSelectedShape() {
 
 
 
-          <div class="arrow-head"></div>
+          ${topElement}
 
 
 
@@ -3118,7 +3320,7 @@ function removeSelectedShape() {
 
 
 
-          ${(type === 'arrow-both' || type === 'arrow-double-slim') ? '<div class="arrow-head arrow-head--bottom"></div>' : ''}
+          ${bottomElement}
 
 
 
@@ -3126,11 +3328,11 @@ function removeSelectedShape() {
 
 
 
-        <div class="shape__handle shape__handle--top" data-handle="top" aria-label="Укоротить или удлинить"></div>
+        <div class="shape__handle shape__handle--top" data-handle="top" aria-label="Laenge anpassen"></div>
 
 
 
-        <div class="shape__handle shape__handle--bottom" data-handle="bottom" aria-label="Укоротить или удлинить"></div>
+        <div class="shape__handle shape__handle--bottom" data-handle="bottom" aria-label="Laenge anpassen"></div>
 
 
 
@@ -3174,11 +3376,11 @@ function removeSelectedShape() {
 
 
 
-        <div class="shape__handle shape__handle--left" data-handle="left" aria-label="Сдвинуть конец"></div>
+        <div class="shape__handle shape__handle--left" data-handle="left" aria-label="Ende verschieben"></div>
 
 
 
-        <div class="shape__handle shape__handle--right" data-handle="right" aria-label="Сдвинуть конец"></div>
+        <div class="shape__handle shape__handle--right" data-handle="right" aria-label="Ende verschieben"></div>
 
 
 
@@ -3198,15 +3400,224 @@ function removeSelectedShape() {
 
 
 
-        function placeShape(shape, type) {
+
+    function createImageShape(src, altText) {
+
+      const shape = document.createElement('div');
+      shape.className = 'shape shape--image';
+      shape.dataset.type = 'image';
+
+      shape.innerHTML = `
+        <div class="shape__body">
+          <div class="image-frame">
+            <img src="${src}" alt="" draggable="false" />
+          </div>
+        </div>
+        <div class="shape__handle shape__handle--top" data-handle="top" aria-label="Hoehe anpassen"></div>
+        <div class="shape__handle shape__handle--bottom" data-handle="bottom" aria-label="Hoehe anpassen"></div>
+        <div class="shape__handle shape__handle--left" data-handle="left" aria-label="Breite anpassen"></div>
+        <div class="shape__handle shape__handle--right" data-handle="right" aria-label="Breite anpassen"></div>
+      `;
+
+      const img = shape.querySelector('img');
+      if (img) {
+        img.alt = altText || '';
+      }
+
+      return shape;
+
+    }
+
+    function createLabelShape() {
+
+      const shape = document.createElement('div');
+      shape.className = 'shape shape--label';
+      shape.dataset.type = 'label';
+      shape.dataset.fontSize = '14';
+      shape.dataset.orientation = 'horizontal';
+      shape.dataset.editing = 'true';
+
+      shape.innerHTML = `
+        <div class="shape__body">
+          <div class="label-content">
+            <div class="label-editor" data-placeholder="Beschriftung..." data-empty="true" contenteditable="true"></div>
+          </div>
+        </div>
+        <div class="shape__handle shape__handle--top" data-handle="top" aria-label="Hoehe anpassen"></div>
+        <div class="shape__handle shape__handle--bottom" data-handle="bottom" aria-label="Hoehe anpassen"></div>
+        <div class="shape__handle shape__handle--left" data-handle="left" aria-label="Breite anpassen"></div>
+        <div class="shape__handle shape__handle--right" data-handle="right" aria-label="Breite anpassen"></div>
+      `;
+
+      applyLabelStyles(shape);
+      setupLabelShape(shape);
+      return shape;
+
+    }
+
+    function applyLabelStyles(shape) {
+
+      if (!shape || shape.dataset.type !== 'label') return;
+      const fontSize = Number(shape.dataset.fontSize) || 14;
+      shape.style.setProperty('--label-font-size', `${fontSize}px`);
+      const orientation = shape.dataset.orientation === 'vertical' ? 'vertical' : 'horizontal';
+      shape.dataset.orientation = orientation;
+    }
+
+    function setupLabelShape(shape) {
+
+      const editor = shape.querySelector('.label-editor');
+      if (!editor) return;
+
+      const updateEmptyState = () => {
+        editor.dataset.empty = editor.textContent.trim().length === 0 ? 'true' : 'false';
+      };
+
+      editor.addEventListener('pointerdown', (event) => {
+        if (shape.dataset.editing === 'true') {
+          event.stopPropagation();
+        }
+      });
+
+      editor.addEventListener('dblclick', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (shape.dataset.editing !== 'true') {
+          enterLabelEdit(shape);
+        }
+      });
+
+      editor.addEventListener('input', () => {
+        updateEmptyState();
+      });
+
+      editor.addEventListener('keydown', (event) => {
+        event.stopPropagation();
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          exitLabelEdit(shape);
+          editor.blur();
+        } else if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+          event.preventDefault();
+          editor.blur();
+        }
+      });
+
+      editor.addEventListener('focus', () => {
+        shape.dataset.editing = 'true';
+      });
+
+      editor.addEventListener('blur', () => {
+        exitLabelEdit(shape);
+      });
+
+      updateEmptyState();
+    }
+
+    function enterLabelEdit(shape) {
+
+      if (!shape || shape.dataset.type !== 'label') return;
+      const editor = shape.querySelector('.label-editor');
+      if (!editor) return;
+      shape.dataset.editing = 'true';
+      editor.contentEditable = 'true';
+      if (selectedShape !== shape) {
+        selectShape(shape);
+      }
+      requestAnimationFrame(() => {
+        editor.focus({ preventScroll: true });
+        placeCaretAtEnd(editor);
+      });
+    }
+
+    function exitLabelEdit(shape) {
+
+      if (!shape || shape.dataset.type !== 'label') return;
+      if (shape.dataset.editing !== 'true') return;
+      const editor = shape.querySelector('.label-editor');
+      if (!editor) return;
+      shape.dataset.editing = 'false';
+      editor.contentEditable = 'false';
+      const text = editor.textContent || '';
+      editor.dataset.empty = text.trim().length === 0 ? 'true' : 'false';
+      applyLabelStyles(shape);
+      updateLabelControls(shape);
+    }
+
+    function placeCaretAtEnd(node) {
+
+      const selection = window.getSelection();
+      if (!selection) return;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      range.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
+    function setLabelFontSize(shape, value) {
+
+      if (!shape || shape.dataset.type !== 'label') return;
+      const size = clamp(Number(value) || 14, 10, 18);
+      shape.dataset.fontSize = String(size);
+      applyLabelStyles(shape);
+      updateLabelControls(shape);
+    }
+
+    function toggleLabelOrientation(shape) {
+
+      if (!shape || shape.dataset.type !== 'label') return;
+      const current = shape.dataset.orientation === 'vertical' ? 'vertical' : 'horizontal';
+      const next = current === 'horizontal' ? 'vertical' : 'horizontal';
+      shape.dataset.orientation = next;
+      applyLabelStyles(shape);
+      updateLabelControls(shape);
+    }
+
+    function updateLabelControls(shape) {
+
+      if (!labelControls) return;
+      const isLabel = !!(shape && shape.dataset && shape.dataset.type === 'label');
+      labelControls.classList.toggle('hidden', !isLabel);
+      const fontSize = isLabel ? Number(shape.dataset.fontSize) || 14 : null;
+      labelFontButtons.forEach((button) => {
+        const targetSize = Number(button.dataset.fontSize);
+        const isActive = isLabel && targetSize === fontSize;
+        button.setAttribute('aria-pressed', String(isActive));
+        button.disabled = !isLabel;
+      });
+      if (labelOrientationBtn) {
+        if (isLabel) {
+          const orientation = shape.dataset.orientation === 'vertical' ? 'vertical' : 'horizontal';
+          const isVertical = orientation === 'vertical';
+          labelOrientationBtn.disabled = false;
+          labelOrientationBtn.textContent = isVertical ? 'Vertikal (von unten nach oben)' : 'Horizontal';
+          labelOrientationBtn.setAttribute('aria-pressed', String(isVertical));
+        } else {
+          labelOrientationBtn.disabled = true;
+          labelOrientationBtn.textContent = 'Horizontal';
+          labelOrientationBtn.setAttribute('aria-pressed', 'false');
+        }
+      }
+    }
+
+    function placeShape(shape, type, initialSize) {
 
 
 
-      const config = SHAPE_CONFIG[type];
+      const config = SHAPE_CONFIG[type] || {};
 
 
 
-      setShapeSize(shape, config.width, config.height);
+      const width = typeof initialSize?.width === 'number' ? initialSize.width : (config.width ?? shape.offsetWidth ?? 200);
+
+
+
+      const height = typeof initialSize?.height === 'number' ? initialSize.height : (config.height ?? shape.offsetHeight ?? 200);
+
+
+
+      setShapeSize(shape, width, height);
 
 
 
@@ -3218,11 +3629,11 @@ function removeSelectedShape() {
 
 
 
-      const shapeWidth = config.width;
+      const shapeWidth = width;
 
 
 
-      const shapeHeight = config.height;
+      const shapeHeight = height;
 
 
 
@@ -3264,7 +3675,7 @@ function removeSelectedShape() {
 
       selectShape(shape);
 
-
+      return shape;
 
     }
 
@@ -3276,21 +3687,21 @@ function removeSelectedShape() {
 
     function createShape(type) {
 
-
-
       let shape;
-
-
 
       if (type === 'line') {
 
         shape = createLine();
 
+      } else if (type === 'label') {
+
+        shape = createLabelShape();
+
       } else {
 
         shape = createArrow(type);
 
-        if (type === 'arrow-up' || type === 'arrow-both') {
+        if (type === 'arrow-up' || type === 'arrow-both' || type === 'segment-open') {
 
           setArrowColor(shape, currentArrowColor);
 
@@ -3298,9 +3709,11 @@ function removeSelectedShape() {
 
       }
 
-      placeShape(shape, type);
+      const placedShape = placeShape(shape, type);
 
-
+      if (type === 'label') {
+        enterLabelEdit(placedShape);
+      }
 
     }
 
@@ -3314,6 +3727,15 @@ function removeSelectedShape() {
 
       const button = event.currentTarget;
       const tool = button.dataset.tool;
+
+      if (tool === 'image') {
+        toolButtons.forEach((btn) => btn.setAttribute('aria-pressed', 'false'));
+        if (imageInput) {
+          imageInput.value = '';
+          imageInput.click();
+        }
+        return;
+      }
 
       createShape(tool);
       toolButtons.forEach((btn) => btn.setAttribute('aria-pressed', String(btn === button)));
@@ -3331,12 +3753,120 @@ function removeSelectedShape() {
 
         if (selectedShape) {
           const type = selectedShape.dataset.type;
-          if (type === 'arrow-up' || type === 'arrow-both') {
+          if (type === 'arrow-up' || type === 'arrow-both' || type === 'segment-open') {
             setArrowColor(selectedShape, color);
           }
         }
       });
     });
+
+    labelFontButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        if (!selectedShape || selectedShape.dataset.type !== 'label') return;
+        setLabelFontSize(selectedShape, button.dataset.fontSize);
+      });
+    });
+
+    if (labelOrientationBtn) {
+      labelOrientationBtn.addEventListener('click', () => {
+        if (!selectedShape || selectedShape.dataset.type !== 'label') return;
+        toggleLabelOrientation(selectedShape);
+      });
+    }
+
+    updateLabelControls(null);
+
+
+    if (imageInput) {
+      imageInput.addEventListener('change', () => {
+        toolButtons.forEach((btn) => btn.setAttribute('aria-pressed', 'false'));
+        const file = imageInput.files && imageInput.files[0];
+        if (!file) {
+          return;
+        }
+        if (!file.type.startsWith('image/')) {
+          console.warn('Nur Bilddateien koennen eingefuegt werden.');
+          imageInput.value = '';
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result;
+          if (typeof result !== 'string') {
+            imageInput.value = '';
+            return;
+          }
+          const img = new Image();
+          img.onload = () => {
+            const naturalWidth = img.naturalWidth || img.width || 1;
+            const naturalHeight = img.naturalHeight || img.height || 1;
+            const aspect = naturalWidth > 0 && naturalHeight > 0 ? naturalWidth / naturalHeight : 1;
+            const config = SHAPE_CONFIG.image || {};
+            const minWidth = config.minWidth ?? 120;
+            const maxWidth = config.maxWidth ?? 960;
+            const minHeight = config.minHeight ?? 80;
+            const maxHeight = config.maxHeight ?? 720;
+            let width = naturalWidth > 0 ? naturalWidth : (config.width ?? 280);
+            let height = naturalHeight > 0 ? naturalHeight : (config.height ?? 180);
+            const downScale = Math.min(maxWidth / width, maxHeight / height, 1);
+            const upScale = Math.max(minWidth / width, minHeight / height, 1);
+            let scale = 1;
+            if (downScale < 1) {
+              scale = downScale;
+            } else if (upScale > 1 && Number.isFinite(upScale)) {
+              scale = upScale;
+            }
+            if (!Number.isFinite(scale) || scale <= 0) {
+              scale = 1;
+            }
+            width = Math.round(width * scale);
+            height = Math.round(height * scale);
+            const ratio = aspect > 0 ? aspect : (width / Math.max(height, 1));
+            const clampToBounds = () => {
+              if (width < minWidth) {
+                width = minWidth;
+                height = Math.round(width / ratio);
+              }
+              if (height < minHeight) {
+                height = minHeight;
+                width = Math.round(height * ratio);
+              }
+              if (width > maxWidth) {
+                width = maxWidth;
+                height = Math.round(width / ratio);
+              }
+              if (height > maxHeight) {
+                height = maxHeight;
+                width = Math.round(height * ratio);
+              }
+            };
+            clampToBounds();
+            clampToBounds();
+            if (!(width > 0) || !(height > 0)) {
+              width = config.width ?? 280;
+              height = config.height ?? 180;
+            }
+            let altText = (file.name || 'Bild').split('\\').pop() || 'Bild';
+            altText = altText.split('/').pop();
+            altText = altText || 'Bild';
+            const shape = createImageShape(result, altText);
+            shape.dataset.aspect = (width / height).toFixed(4);
+            placeShape(shape, 'image', { width, height });
+            imageInput.value = '';
+          };
+          img.onerror = () => {
+            console.error('Bild konnte nicht geladen werden.');
+            imageInput.value = '';
+          };
+          img.src = result;
+        };
+        reader.onerror = () => {
+          console.error('Datei konnte nicht gelesen werden.');
+          imageInput.value = '';
+        };
+        reader.readAsDataURL(file);
+      });
+    }
 
 window.addEventListener('keydown', handleKeyDown);
 
@@ -3435,6 +3965,18 @@ window.addEventListener('keydown', handleKeyDown);
 
 
       const shape = event.target.closest('.shape');
+
+      if (selectedShape && selectedShape !== shape && selectedShape.dataset && selectedShape.dataset.type === 'label' && selectedShape.dataset.editing === 'true') {
+        exitLabelEdit(selectedShape);
+      }
+
+      if (shape && shape.dataset && shape.dataset.type === 'label' && shape.dataset.editing === 'true') {
+        const editor = shape.querySelector('.label-editor');
+        if (!editor || !editor.contains(event.target)) {
+          exitLabelEdit(shape);
+        }
+      }
+
 
 
 
@@ -3908,6 +4450,8 @@ window.addEventListener('keydown', handleKeyDown);
 
     window.addEventListener('pointercancel', handlePointerUp);
 
+    window.addEventListener('resize', () => updateSegmentOpenBounds());
+
 
 
 
@@ -3915,6 +4459,9 @@ window.addEventListener('keydown', handleKeyDown);
 
 
     renderScale();
+
+    updateSegmentOpenBounds();
+
 
 
 
@@ -4031,8 +4578,3 @@ window.addEventListener('keydown', handleKeyDown);
 
 
 </html>
-
-
-
-
-
