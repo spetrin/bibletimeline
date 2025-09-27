@@ -1,0 +1,427 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Библейская лента времени</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --backdrop: rgba(22, 28, 39, 0.45);
+      --card-bg: #fff;
+      --card-shadow: 0 18px 42px rgba(15, 23, 42, 0.25);
+      --radius: 18px;
+      --primary: #1f2937;
+      --primary-text: #f9fafb;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      color-scheme: light;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, "Noto Sans", sans-serif; background: #f3f4f6; color: #111827; }
+    body { display: grid; place-items: center; padding: 32px 16px; }
+    .hidden { display: none !important; }
+    .app-shell { width: min(960px, 100%); background: #fff; border-radius: 24px; box-shadow: 0 24px 56px rgba(15, 23, 42, 0.15); padding: 32px 40px; display: flex; flex-direction: column; gap: 24px; }
+    .app-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .user-chip { display: flex; align-items: center; gap: 12px; background: #f9fafb; border-radius: 999px; padding: 8px 16px; border: 1px solid var(--border); }
+    .user-chip span { display: block; font-size: 0.95rem; }
+    .logout-btn { border: 0; background: #111827; color: #f9fafb; border-radius: 999px; cursor: pointer; padding: 0.55rem 1.15rem; font-size: 0.95rem; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .logout-btn:active { transform: translateY(1px); }
+    .app-content { display: grid; gap: 12px; }
+    .card { background: #fff; border-radius: 20px; border: 1px solid var(--border); padding: 24px; box-shadow: var(--card-shadow); text-align: center; animation: rise 0.35s ease both; }
+    .card h1 { margin: 0 0 8px; font-size: clamp(1.6rem, 3.6vw, 2.3rem); }
+    .card p { margin: 0; color: var(--muted); font-size: 1rem; }
+    @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .auth-backdrop { position: fixed; inset: 0; display: grid; place-items: center; background: var(--backdrop); padding: 24px; }
+    .auth-card { width: min(520px, 100%); background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--card-shadow); padding: clamp(24px, 5vw, 36px); display: grid; gap: 20px; }
+    .auth-card h2 { margin: 0; font-size: clamp(1.4rem, 3.6vw, 2rem); text-align: center; }
+    .social-buttons { display: grid; gap: 12px; }
+    .social-buttons button { border-radius: 12px; border: 1px solid var(--border); background: #fff; padding: 12px 14px; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .social-buttons button span { font-weight: 600; }
+    .social-buttons button:active { transform: translateY(1px); }
+    .or-divider { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; font-size: 0.9rem; color: var(--muted); }
+    .or-divider::before, .or-divider::after { content: ""; height: 1px; background: var(--border); }
+    form.auth-form { display: grid; gap: 12px; }
+    .field { display: grid; gap: 6px; text-align: left; }
+    .field label { font-size: 0.9rem; font-weight: 600; color: #374151; }
+    .field input { border-radius: 12px; border: 1px solid var(--border); padding: 12px; font-size: 1rem; font-family: inherit; }
+    .field input:focus { outline: 2px solid rgba(59, 130, 246, 0.35); outline-offset: 2px; }
+    .helper { color: var(--muted); font-size: 0.85rem; text-align: left; }
+    .error { color: #dc2626; font-size: 0.9rem; font-weight: 600; text-align: center; }
+    .submit-btn { border-radius: 12px; border: 0; background: #111827; color: #f9fafb; padding: 0.85rem 1.2rem; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .submit-btn:active { transform: translateY(1px); }
+    .toggle-mode { font-size: 0.9rem; text-align: center; color: #2563eb; cursor: pointer; background: none; border: 0; padding: 0; }
+    @media (max-width: 640px) {
+      body { padding: 16px; }
+      .app-shell { padding: 24px 20px; border-radius: 18px; }
+      .app-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app-shell" class="app-shell hidden" aria-live="polite">
+    <header class="app-header">
+      <div>
+        <h1 id="app-greeting">Добро пожаловать!</h1>
+        <p id="app-description">Подготовьтесь к погружению в библейскую историю.</p>
+      </div>
+      <div class="user-chip">
+        <span id="user-email">—</span>
+        <button type="button" id="logout-btn" class="logout-btn">Выйти</button>
+      </div>
+    </header>
+    <section class="app-content">
+      <article class="card">
+        <h1 id="timeline-title">Загружена лента времени</h1>
+        <p id="timeline-subtitle">После входа вы сможете продолжить работу с проектом «Bible Timeline».</p>
+      </article>
+    </section>
+  </div>
+  <div id="auth-backdrop" class="auth-backdrop" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <div class="auth-card" role="document">
+      <h2 id="auth-title">Войдите или создайте аккаунт</h2>
+      <p class="helper" id="auth-helper">Используйте свою почту или войдите через доступные сервисы.</p>
+      <div class="social-buttons" aria-label="Быстрые способы входа">
+        <button type="button" data-provider="google" aria-label="Войти через Google"><span>Google</span></button>
+        <button type="button" data-provider="apple" aria-label="Войти через Apple"><span>Apple</span></button>
+      </div>
+      <div class="or-divider">или</div>
+      <form id="auth-form" class="auth-form" novalidate>
+        <div class="field">
+          <label for="email">Электронная почта</label>
+          <input type="email" id="email" name="email" required autocomplete="email" placeholder="name@example.com" />
+        </div>
+        <div class="field">
+          <label for="password">Пароль</label>
+          <input type="password" id="password" name="password" required minlength="6" autocomplete="current-password" placeholder="Минимум 6 символов" />
+          <p class="helper">Пароль хранится локально и используется только в этом браузере.</p>
+        </div>
+        <div class="field hidden" id="name-field">
+          <label for="displayName">Как к вам обращаться?</label>
+          <input type="text" id="displayName" name="displayName" autocomplete="name" placeholder="Иван" />
+        </div>
+        <p id="form-error" class="error hidden" role="alert"></p>
+        <button type="submit" class="submit-btn" id="submit-btn">Войти</button>
+      </form>
+      <button type="button" id="toggle-mode" class="toggle-mode" aria-live="polite">Я здесь впервые — создать аккаунт</button>
+    </div>
+  </div>
+  <noscript>
+    <div class="auth-backdrop">
+      <div class="auth-card">
+        <h2>Нужно разрешить JavaScript</h2>
+        <p>Для входа в систему и работы с лентой времени включите JavaScript в вашем браузере.</p>
+      </div>
+    </div>
+  </noscript>
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+        "firebase/analytics": "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"
+      }
+    }
+  </script>
+
+
+
+
+      <script type="module">
+    import { initializeApp } from "firebase/app";
+    import { getAnalytics } from "firebase/analytics";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      updateProfile,
+      GoogleAuthProvider,
+      OAuthProvider,
+      signInWithPopup,
+      signInWithRedirect,
+      getRedirectResult,
+      setPersistence,
+      browserLocalPersistence
+    } from "firebase/auth";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDfE1awohBPXiFNoACKIrzGEQgEiy4ZqdA",
+      authDomain: "bibelzeitlinie.firebaseapp.com",
+      projectId: "bibelzeitlinie",
+      storageBucket: "bibelzeitlinie.appspot.com",
+      messagingSenderId: "926523566761",
+      appId: "1:926523566761:web:5317526ed767a2619e97b8",
+      measurementId: "G-D2PJPMXPV5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    let analytics;
+    try {
+      analytics = getAnalytics(app);
+    } catch (analyticsError) {
+      console.warn("Firebase Analytics недоступна в текущем окружении", analyticsError);
+    }
+
+    const auth = getAuth(app);
+    auth.languageCode = "ru";
+    setPersistence(auth, browserLocalPersistence).catch((error) => {
+      console.warn("Не удалось сохранить сессию локально", error);
+    });
+
+    const appShell = document.getElementById("app-shell");
+    const authBackdrop = document.getElementById("auth-backdrop");
+    const authForm = document.getElementById("auth-form");
+    const toggleModeBtn = document.getElementById("toggle-mode");
+    const submitBtn = document.getElementById("submit-btn");
+    const nameField = document.getElementById("name-field");
+    const formError = document.getElementById("form-error");
+    const logoutBtn = document.getElementById("logout-btn");
+    const userEmail = document.getElementById("user-email");
+    const appGreeting = document.getElementById("app-greeting");
+    const appDescription = document.getElementById("app-description");
+    const timelineTitle = document.getElementById("timeline-title");
+    const timelineSubtitle = document.getElementById("timeline-subtitle");
+
+    let isSignUpMode = false;
+
+    function setMode(signUp) {
+      isSignUpMode = signUp;
+      nameField.classList.toggle("hidden", !signUp);
+      toggleModeBtn.textContent = signUp
+        ? "У меня уже есть аккаунт — войти"
+        : "Я здесь впервые — создать аккаунт";
+      updateSubmitState(false);
+      formError.classList.add("hidden");
+    }
+
+    function updateSubmitState(isLoading) {
+      if (isLoading) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = isSignUpMode ? "Создание..." : "Вход...";
+      } else {
+        submitBtn.disabled = false;
+        submitBtn.textContent = isSignUpMode ? "Создать аккаунт" : "Войти";
+      }
+    }
+
+    function getGreetingByHour(hour) {
+      if (hour >= 5 && hour <= 10) return "Доброе утро";
+      if (hour >= 11 && hour <= 16) return "Добрый день";
+      if (hour >= 17 && hour <= 21) return "Добрый вечер";
+      return "Доброй ночи";
+    }
+
+    function getProviderLabel(providerId) {
+      switch (providerId) {
+        case "google.com":
+          return "Google";
+        case "apple.com":
+          return "Apple";
+        case "password":
+          return "почта";
+        case "anonymous":
+          return "гость";
+        default:
+          return providerId || "неизвестно";
+      }
+    }
+
+    function renderAppForUser(user) {
+      const now = new Date();
+      const greeting = getGreetingByHour(now.getHours());
+      const displayName = (user.displayName || user.email || "пользователь").trim();
+      const providerId = user.providerData[0]?.providerId || (user.isAnonymous ? "anonymous" : "password");
+
+      appGreeting.textContent = `${greeting}, ${displayName}!`;
+      appDescription.textContent = "Вы готовы продолжить работу с лентой времени.";
+      timelineTitle.textContent = "Лента времени доступна";
+      timelineSubtitle.textContent = `Аккаунт: ${getProviderLabel(providerId)}`;
+      userEmail.textContent = user.email || "—";
+    }
+
+    function toggleAuthVisibility(showAuth) {
+      if (showAuth) {
+        authBackdrop.classList.remove("hidden");
+        appShell.classList.add("hidden");
+      } else {
+        authBackdrop.classList.add("hidden");
+        appShell.classList.remove("hidden");
+      }
+    }
+
+    function showError(message) {
+      formError.textContent = message;
+      formError.classList.remove("hidden");
+    }
+
+    function resolveAuthError(error) {
+      const code = error?.code;
+      switch (code) {
+        case "auth/email-already-in-use":
+          return "Такой e-mail уже зарегистрирован. Попробуйте войти.";
+        case "auth/invalid-email":
+          return "Введите корректный e-mail.";
+        case "auth/weak-password":
+          return "Минимальная длина пароля — 6 символов.";
+        case "auth/wrong-password":
+          return "Неверный пароль. Проверьте ввод.";
+        case "auth/user-not-found":
+          return "Аккаунт не найден. Создайте его или попробуйте другой способ входа.";
+        case "auth/operation-not-allowed":
+          return "Метод входа по e-mail выключен. Разрешите его в консоли Firebase.";
+        case "auth/too-many-requests":
+          return "Слишком много попыток. Подождите немного и попробуйте снова.";
+        case "auth/popup-blocked":
+        case "auth/popup-blocked-by-browser":
+          return "Браузер заблокировал всплывающее окно. Разрешите всплывающие окна и попробуйте снова.";
+        case "auth/unauthorized-domain":
+          return "Домен не разрешён для авторизации в Firebase. Добавьте текущий хост в список Authorized domains.";
+        case "auth/cancelled-popup-request":
+          return "Предыдущая попытка входа ещё выполняется. Попробуйте снова через мгновение.";
+        default:
+          return "Не удалось выполнить действие. Попробуйте ещё раз позже.";
+      }
+    }
+
+    async function handlePasswordAuth(event) {
+      event.preventDefault();
+      formError.classList.add("hidden");
+
+      const formData = new FormData(authForm);
+      const email = formData.get("email").trim().toLowerCase();
+      const password = formData.get("password");
+      const displayName = (formData.get("displayName") || "").trim();
+
+      if (!/^\S+@\S+\.\S+$/.test(email)) {
+        return showError("Введите корректный e-mail.");
+      }
+      if (password.length < 6) {
+        return showError("Минимальная длина пароля — 6 символов.");
+      }
+
+      updateSubmitState(true);
+
+      try {
+        if (isSignUpMode) {
+          const credential = await createUserWithEmailAndPassword(auth, email, password);
+          if (displayName) {
+            await updateProfile(credential.user, { displayName });
+          }
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+        authForm.reset();
+        if (isSignUpMode && !displayName) {
+          setMode(false);
+        }
+      } catch (error) {
+        console.error("Ошибка пароля/почты", error);
+        showError(resolveAuthError(error));
+      } finally {
+        updateSubmitState(false);
+      }
+    }
+
+    async function handleProviderSignIn(providerKey) {
+      formError.classList.add("hidden");
+
+      let provider;
+      if (providerKey === "google") {
+        provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: "select_account" });
+      } else if (providerKey === "apple") {
+        provider = new OAuthProvider("apple.com");
+        provider.addScope("email");
+        provider.addScope("name");
+      } else {
+        return;
+      }
+
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        if (error?.code === "auth/popup-closed-by-user" || error?.code === "auth/cancelled-popup-request") {
+          return;
+        }
+
+        if (error?.code === "auth/popup-blocked" || error?.code === "auth/popup-blocked-by-browser") {
+          try {
+            await signInWithRedirect(auth, provider);
+            return;
+          } catch (redirectError) {
+            console.error("Ошибка входа через redirect", redirectError);
+            showError(resolveAuthError(redirectError));
+            return;
+          }
+        }
+
+        console.error("Ошибка входа через провайдера", error);
+        showError(resolveAuthError(error));
+      }
+    }
+
+    async function handleLogout() {
+      try {
+        await signOut(auth);
+        authForm.reset();
+        setMode(false);
+      } catch (error) {
+        console.error("Ошибка выхода", error);
+        showError("Не удалось выйти. Попробуйте ещё раз.");
+      }
+    }
+
+    toggleModeBtn.addEventListener("click", () => setMode(!isSignUpMode));
+    authForm.addEventListener("submit", handlePasswordAuth);
+    logoutBtn.addEventListener("click", handleLogout);
+
+    document.querySelectorAll("[data-provider]").forEach((button) => {
+      button.addEventListener("click", () => handleProviderSignIn(button.dataset.provider));
+    });
+
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          renderAppForUser(result.user);
+          toggleAuthVisibility(false);
+          formError.classList.add("hidden");
+        }
+      })
+      .catch((error) => {
+        if (error?.code && error.code !== "auth/no-auth-event") {
+          console.error("Ошибка завершения входа через redirect", error);
+          showError(resolveAuthError(error));
+        }
+      });
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        renderAppForUser(user);
+        toggleAuthVisibility(false);
+        formError.classList.add("hidden");
+      } else {
+        toggleAuthVisibility(true);
+        setMode(false);
+      }
+    });
+  </script>
+
+
+
+
+
+
+
+</body>
+</html>
+
+
+
+
+
+
