@@ -2792,14 +2792,24 @@
 
       if (!workspaceCanvas || !workspace || !timelineScale) return;
 
-      const scaleHeight = timelineScale.scrollHeight;
+      const computed = getComputedStyle(timelineScale);
+      const declaredHeight = parseFloat(computed.height) || 0;
+      const scaleHeight = Math.max(
+        timelineScale.scrollHeight,
+        timelineScale.offsetHeight,
+        declaredHeight
+      );
+
       if (!Number.isFinite(scaleHeight) || scaleHeight <= 0) return;
 
-      const minHeight = scaleHeight + 'px';
-      workspaceCanvas.style.minHeight = minHeight;
-      workspace.style.minHeight = minHeight;
+      const resolvedHeight = `${Math.round(scaleHeight)}px`;
+      workspaceCanvas.style.minHeight = resolvedHeight;
+      workspace.style.minHeight = resolvedHeight;
+      workspaceCanvas.style.height = resolvedHeight;
+      workspace.style.height = resolvedHeight;
 
     }
+
 
     function updateSegmentOpenBounds() {
 
