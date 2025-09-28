@@ -1466,7 +1466,7 @@
 
 
 
-      top: -10px;
+      top: calc(var(--handle-size) * -0.5);
 
 
 
@@ -1490,7 +1490,7 @@
 
 
 
-      bottom: -10px;
+      bottom: calc(var(--handle-size) * -0.5);
 
 
 
@@ -1514,7 +1514,7 @@
 
 
 
-      left: -10px;
+      left: calc(var(--handle-size) * -0.5);
 
 
 
@@ -1538,7 +1538,7 @@
 
 
 
-      right: -10px;
+      right: calc(var(--handle-size) * -0.5);
 
 
 
@@ -2095,6 +2095,73 @@
 
 
 
+    .view-only-alert {
+      display: none;
+    }
+
+    @media (pointer: coarse) {
+      :root {
+        --handle-size: 26px;
+      }
+    }
+
+    body.view-only-mode {
+      padding-left: clamp(16px, 4vw, 32px);
+    }
+
+    body.view-only-mode .tools-panel {
+      display: none;
+    }
+
+    body.view-only-mode .workspace-toolbar {
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    body.view-only-mode .view-only-alert {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      color: #f8fafc;
+      font-size: 0.9rem;
+      box-shadow: 0 18px 30px rgba(15, 23, 42, 0.24);
+    }
+
+    body.view-only-mode .workspace-viewport {
+      padding: clamp(16px, 6vw, 40px);
+    }
+
+    body.view-only-mode .workspace-canvas,
+    body.view-only-mode .shape {
+      cursor: default;
+    }
+
+    body.view-only-mode .shape__handle {
+      pointer-events: none;
+    }
+
+    @media (pointer: coarse) {
+      body:not(.view-only-mode) .workspace-canvas {
+        touch-action: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body.view-only-mode .workspace-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      body.view-only-mode .view-only-alert {
+        width: 100%;
+        justify-content: center;
+      }
+    }
   </style>
 
 
@@ -2285,7 +2352,7 @@
 
       </div>
 
-
+      <div class="view-only-alert hidden" id="view-only-alert" role="status" aria-live="polite">Nur Ansicht - Bearbeitung am Tablet/Desktop</div>
 
     </div>
 
@@ -2388,20 +2455,10 @@
 
     const workspaceViewport = document.getElementById('workspace-viewport');
 
-
-
     const timelineScale = document.getElementById('timeline-scale');
-
-
-
     const yearNav = document.getElementById('year-nav');
-
-
-
+    const viewOnlyAlert = document.getElementById('view-only-alert');
     const toolsPanel = document.getElementById('tools-panel');
-
-
-
 
     const imageInput = document.getElementById('image-upload-input');
     const workspaceImportInput = document.getElementById('workspace-import-input');
@@ -2413,8 +2470,18 @@
     const colorButtons = toolsPanel.querySelectorAll('[data-color]');
 
     const labelControls = document.getElementById('label-controls');
+
     const labelFontButtons = labelControls ? Array.from(labelControls.querySelectorAll('[data-font-size]')) : [];
+
     const labelOrientationBtn = labelControls ? labelControls.querySelector('[data-orientation-toggle]') : null;
+
+    const coarsePointerQuery = window.matchMedia('(pointer: coarse)');
+
+    const phoneViewportQuery = window.matchMedia('(max-width: 640px)');
+
+
+
+    let isViewOnlyMode = false;
 
     let currentScale = 1;
 
@@ -2425,6 +2492,7 @@
 
 
     let selectedShape = null;
+
 
 
 
@@ -2496,6 +2564,62 @@
 
 
     const POSITION_PADDING = 8;
+
+
+    function addMediaQueryListener(query, handler) {
+      if (!query) return;
+      if (typeof query.addEventListener === 'function') {
+        query.addEventListener('change', handler);
+      } else if (typeof query.addListener === 'function') {
+        query.addListener(handler);
+      }
+    }
+
+    function applyViewOnlyState() {
+      document.body.classList.toggle('view-only-mode', isViewOnlyMode);
+      if (viewOnlyAlert) {
+        viewOnlyAlert.classList.toggle('hidden', !isViewOnlyMode);
+      }
+
+      workspaceCanvas.style.touchAction = isViewOnlyMode ? 'pan-y pinch-zoom' : 'none';
+
+      if (isViewOnlyMode && selectedShape) {
+        clearSelection();
+      }
+
+      toolButtons.forEach((button) => {
+        button.disabled = isViewOnlyMode;
+        if (isViewOnlyMode) {
+          button.setAttribute('aria-pressed', 'false');
+        }
+      });
+
+      colorButtons.forEach((button) => {
+        button.disabled = isViewOnlyMode;
+      });
+
+      labelFontButtons.forEach((button) => {
+        button.disabled = isViewOnlyMode;
+      });
+
+      if (labelOrientationBtn) {
+        labelOrientationBtn.disabled = isViewOnlyMode;
+      }
+
+      fileActionButtons.forEach((button) => {
+        if (button.dataset.fileAction === 'import') {
+          button.disabled = isViewOnlyMode;
+        }
+      });
+    }
+
+    function updateInteractionMode() {
+      const shouldBeViewOnly = coarsePointerQuery.matches && phoneViewportQuery.matches;
+      if (shouldBeViewOnly !== isViewOnlyMode) {
+        isViewOnlyMode = shouldBeViewOnly;
+      }
+      applyViewOnlyState();
+    }
 
 
 
@@ -3851,16 +3975,17 @@ function removeSelectedShape() {
 
       if (!labelControls) return;
       const isLabel = !!(shape && shape.dataset && shape.dataset.type === 'label');
-      labelControls.classList.toggle('hidden', !isLabel);
+      const hideControls = !isLabel || isViewOnlyMode;
+      labelControls.classList.toggle('hidden', hideControls);
       const fontSize = isLabel ? Number(shape.dataset.fontSize) || 14 : null;
       labelFontButtons.forEach((button) => {
         const targetSize = Number(button.dataset.fontSize);
         const isActive = isLabel && targetSize === fontSize;
         button.setAttribute('aria-pressed', String(isActive));
-        button.disabled = !isLabel;
+        button.disabled = !isLabel || isViewOnlyMode;
       });
       if (labelOrientationBtn) {
-        if (isLabel) {
+        if (isLabel && !isViewOnlyMode) {
           const orientation = shape.dataset.orientation === 'vertical' ? 'vertical' : 'horizontal';
           const isVertical = orientation === 'vertical';
           labelOrientationBtn.disabled = false;
@@ -4002,6 +4127,8 @@ function removeSelectedShape() {
 
         function handleToolClick(event) {
 
+      if (isViewOnlyMode) return;
+
       const button = event.currentTarget;
       const tool = button.dataset.tool;
 
@@ -4023,6 +4150,8 @@ function removeSelectedShape() {
 
     colorButtons.forEach((button) => {
       button.addEventListener('click', () => {
+        if (isViewOnlyMode) return;
+
         const color = button.dataset.color;
 
         currentArrowColor = color;
@@ -4042,6 +4171,9 @@ function removeSelectedShape() {
     fileActionButtons.forEach((button) => {
       button.addEventListener('click', () => {
         const action = button.dataset.fileAction;
+        if (isViewOnlyMode && action === 'import') {
+          return;
+        }
         if (action === 'export') {
           exportWorkspaceAsFile();
         } else if (action === 'import') {
@@ -4055,6 +4187,11 @@ function removeSelectedShape() {
 
     if (workspaceImportInput) {
       workspaceImportInput.addEventListener('change', () => {
+        if (isViewOnlyMode) {
+          workspaceImportInput.value = '';
+          return;
+        }
+
         const file = workspaceImportInput.files && workspaceImportInput.files[0];
         if (!file) return;
         importWorkspaceFromFile(file);
@@ -4063,6 +4200,7 @@ function removeSelectedShape() {
 
     labelFontButtons.forEach((button) => {
       button.addEventListener('click', () => {
+        if (isViewOnlyMode) return;
         if (!selectedShape || selectedShape.dataset.type !== 'label') return;
         setLabelFontSize(selectedShape, button.dataset.fontSize);
         scheduleSave();
@@ -4071,6 +4209,7 @@ function removeSelectedShape() {
 
     if (labelOrientationBtn) {
       labelOrientationBtn.addEventListener('click', () => {
+        if (isViewOnlyMode) return;
         if (!selectedShape || selectedShape.dataset.type !== 'label') return;
         toggleLabelOrientation(selectedShape);
         scheduleSave();
@@ -4082,6 +4221,11 @@ function removeSelectedShape() {
 
     if (imageInput) {
       imageInput.addEventListener('change', () => {
+        if (isViewOnlyMode) {
+          imageInput.value = '';
+          return;
+        }
+
         toolButtons.forEach((btn) => btn.setAttribute('aria-pressed', 'false'));
         const file = imageInput.files && imageInput.files[0];
         if (!file) {
@@ -4198,6 +4342,8 @@ window.addEventListener('keydown', handleKeyDown);
 
     function handleKeyDown(event) {
 
+      if (isViewOnlyMode) return;
+
 
 
       if (!selectedShape) return;
@@ -4257,6 +4403,8 @@ window.addEventListener('keydown', handleKeyDown);
 
 
     function handlePointerDown(event) {
+
+      if (isViewOnlyMode) return;
 
 
 
@@ -4433,6 +4581,8 @@ window.addEventListener('keydown', handleKeyDown);
 
 
     function handlePointerMove(event) {
+
+      if (isViewOnlyMode) return;
 
 
 
@@ -4666,6 +4816,8 @@ window.addEventListener('keydown', handleKeyDown);
 
     function handlePointerUp(event) {
 
+      if (isViewOnlyMode) return;
+
       if (!pointerState.shape) return;
 
       if (event.pointerId !== undefined && pointerState.pointerId !== 'mouse' && event.pointerId !== pointerState.pointerId) return;
@@ -4718,9 +4870,9 @@ window.addEventListener('keydown', handleKeyDown);
       updateSegmentOpenBounds();
     });
 
-
-
-
+    updateInteractionMode();
+    addMediaQueryListener(coarsePointerQuery, updateInteractionMode);
+    addMediaQueryListener(phoneViewportQuery, updateInteractionMode);
 
 
 
