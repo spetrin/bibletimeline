@@ -800,51 +800,23 @@
 
     .workspace {
 
-
-
       position: relative;
 
-
+      width: 100%;
 
       min-height: 100%;
 
-
-
-      width: min(1280px, 100%);
-
-
-
-      margin: 0 auto;
-
-
+      margin: 0;
 
       background: var(--board-bg);
 
-
-
-      border-radius: clamp(24px, 3vw, 40px);
-
-
-
-      box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.2);
-
-
-
       display: flex;
-
-
 
       justify-content: center;
 
+      align-items: stretch;
 
-
-      align-items: flex-start;
-
-
-
-      padding: clamp(32px, 5vw, 48px) 0;
-
-
+      padding: 0;
 
     }
 
@@ -900,27 +872,15 @@
 
     .timeline-scale {
 
-
-
       position: relative;
-
-
 
       width: 160px;
 
-
-
       height: 400cm;
 
-
-
-      padding: 32px 0;
-
-
+      padding: 0;
 
       pointer-events: none;
-
-
 
     }
 
@@ -2227,22 +2187,6 @@
 
 
 
-      <button type="button" class="tool-button" data-tool="arrow-up" aria-pressed="false">
-
-
-
-        <span class="tool-preview">&uarr;</span>
-
-
-
-        <span>Breiter Pfeil nach oben</span>
-
-
-
-      </button>
-
-
-
       <button type="button" class="tool-button" data-tool="arrow-both" aria-pressed="false">
 
 
@@ -2585,7 +2529,6 @@
 
 
 
-      'arrow-up': { width: 18, height: 240, minHeight: 120, maxHeight: 900 },
 
 
 
@@ -4074,7 +4017,7 @@ function removeSelectedShape() {
 
         shape = createArrow(type);
 
-        if (type === 'arrow-up' || type === 'arrow-both' || type === 'segment-open') {
+        if (type === 'arrow-both' || type === 'segment-open') {
 
           setArrowColor(shape, currentArrowColor);
 
@@ -4128,7 +4071,7 @@ function removeSelectedShape() {
 
         if (selectedShape) {
           const type = selectedShape.dataset.type;
-          if (type === 'arrow-up' || type === 'arrow-both' || type === 'segment-open') {
+          if (type === 'arrow-both' || type === 'segment-open') {
             setArrowColor(selectedShape, color);
           }
         }
