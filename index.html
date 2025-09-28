@@ -1771,39 +1771,6 @@
 
 
     }
-    .arrow-cap {
-
-      position: absolute;
-
-      left: 50%;
-
-      transform: translateX(-50%);
-
-      width: 18px;
-
-      height: 24px;
-
-      background: var(--arrow-color, var(--arrow-green));
-
-    }
-
-    .arrow-cap--top {
-
-      top: 0;
-
-      border-radius: 10px 10px 6px 6px;
-
-    }
-
-    .arrow-cap--bottom {
-
-      bottom: 0;
-
-      border-radius: 6px 6px 10px 10px;
-
-    }
-
-
     .arrow-fray {
       position: absolute;
       left: 50%;
@@ -1990,15 +1957,15 @@
 
     .shape--arrow-up .arrow-shaft {
 
-      top: 24px;
+      top: 0;
 
       bottom: 0;
 
       height: auto;
 
-      width: 14px;
+      width: 18px;
 
-      border-radius: 6px;
+      border-radius: 9px;
 
     }
 
@@ -2010,15 +1977,15 @@
 
     .shape--arrow-both .arrow-shaft {
 
-      top: 24px;
+      top: 0;
 
-      bottom: 24px;
+      bottom: 0;
 
       height: auto;
 
-      width: 14px;
+      width: 18px;
 
-      border-radius: 6px;
+      border-radius: 9px;
 
     }
 
@@ -3692,11 +3659,6 @@ function removeSelectedShape() {
       } else if (type === 'arrow-double-slim') {
         topElement = '<div class="arrow-head"></div>';
         bottomElement = '<div class="arrow-head arrow-head--bottom"></div>';
-      } else if (type === 'arrow-up') {
-        topElement = '<div class="arrow-cap arrow-cap--top"></div>';
-      } else if (type === 'arrow-both') {
-        topElement = '<div class="arrow-cap arrow-cap--top"></div>';
-        bottomElement = '<div class="arrow-cap arrow-cap--bottom"></div>';
       }
 
 
