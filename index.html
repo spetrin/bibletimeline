@@ -410,6 +410,50 @@
 
 
 
+    .file-controls {
+
+      display: grid;
+
+      gap: 8px;
+
+    }
+
+    .file-btn {
+
+      border-radius: 16px;
+
+      border: 1px solid rgba(148, 163, 184, 0.35);
+
+      background: rgba(15, 23, 42, 0.08);
+
+      padding: 10px 14px;
+
+      font-size: 0.9rem;
+
+      color: inherit;
+
+      cursor: pointer;
+
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+    }
+
+    .file-btn:hover {
+
+      border-color: rgba(14, 165, 233, 0.6);
+
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.18);
+
+    }
+
+    .file-btn:active {
+
+      transform: translateY(1px);
+
+    }
+
+
+
     .color-swatch {
 
 
@@ -2312,6 +2356,16 @@
       </div>
     </div>
 
+    <div class="tools-panel__group">
+      <span style="font-size:0.85rem; opacity:0.85;">Datei</span>
+      <div class="file-controls">
+        <button type="button" class="file-btn" data-file-action="export">Exportieren</button>
+        <button type="button" class="file-btn" data-file-action="import">Importieren</button>
+      </div>
+    </div>
+
+    <input type="file" id="workspace-import-input" accept="application/json" hidden />
+
     <input type="file" id="image-upload-input" accept="image/*" hidden />
   </aside>
 
@@ -2471,7 +2525,9 @@
 
 
     const imageInput = document.getElementById('image-upload-input');
+    const workspaceImportInput = document.getElementById('workspace-import-input');
     const toolButtons = toolsPanel.querySelectorAll('[data-tool]');
+    const fileActionButtons = toolsPanel.querySelectorAll('[data-file-action]');
 
 
 
@@ -3330,12 +3386,16 @@
 
     function saveWorkspaceState() {
 
-      if (!storageAvailable || isRestoringState) return;
-      try {
-        const state = serializeWorkspace();
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch (error) {
-        console.warn('Speichern des Arbeitsbereichs ist fehlgeschlagen.', error);
+      if (isRestoringState) return;
+      const state = serializeWorkspace();
+      if (!state) return;
+
+      if (storageAvailable) {
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (error) {
+          console.warn('Speichern des Arbeitsbereichs ist fehlgeschlagen.', error);
+        }
       }
 
     }
@@ -3385,6 +3445,57 @@
 
     }
 
+    function applyWorkspaceState(state, { skipSave = false } = {}) {
+
+      if (!state || !Array.isArray(state.shapes)) return false;
+
+      isRestoringState = true;
+
+      try {
+        workspaceCanvas.querySelectorAll('.shape').forEach((shape) => shape.remove());
+
+        state.shapes.forEach((shapeData) => {
+          const shape = createShapeFromState(shapeData);
+          if (!shape) return;
+
+          workspaceCanvas.appendChild(shape);
+
+          const width = Number.isFinite(shapeData.width) ? shapeData.width : null;
+          const height = Number.isFinite(shapeData.height) ? shapeData.height : null;
+          if (width !== null || height !== null) {
+            setShapeSize(shape, width, height);
+          }
+
+          const x = Number.isFinite(shapeData.x) ? shapeData.x : 0;
+          const y = Number.isFinite(shapeData.y) ? shapeData.y : 0;
+          setShapePosition(shape, x, y);
+
+          if (Number.isFinite(shapeData.zIndex)) {
+            shape.style.zIndex = String(shapeData.zIndex);
+          }
+        });
+
+        clearSelection();
+
+        if (Number.isFinite(state.scale)) {
+          applyZoom(state.scale);
+        }
+
+        if (Number.isFinite(state.scrollTop)) {
+          workspaceViewport.scrollTop = state.scrollTop;
+        }
+      } finally {
+        isRestoringState = false;
+      }
+
+      if (!skipSave) {
+        saveWorkspaceState();
+      }
+
+      return true;
+
+    }
+
     function restoreWorkspaceState() {
 
       if (!storageAvailable) return;
@@ -3407,44 +3518,87 @@
         return;
       }
 
-      if (!state || !Array.isArray(state.shapes)) return;
+      applyWorkspaceState(state, { skipSave: true });
 
-      isRestoringState = true;
+    }
 
-      workspaceCanvas.querySelectorAll('.shape').forEach((shape) => shape.remove());
+    function getWorkspaceExportFilename() {
 
-      state.shapes.forEach((shapeData) => {
-        const shape = createShapeFromState(shapeData);
-        if (!shape) return;
+      const now = new Date();
+      const iso = now.toISOString().replace(/[:.]/g, '-');
+      return `timeline-workspace-${iso}.json`;
 
-        workspaceCanvas.appendChild(shape);
+    }
 
-        const width = Number.isFinite(shapeData.width) ? shapeData.width : null;
-        const height = Number.isFinite(shapeData.height) ? shapeData.height : null;
-        if (width !== null || height !== null) {
-          setShapeSize(shape, width, height);
+    function exportWorkspaceAsFile() {
+
+      try {
+        const state = serializeWorkspace();
+        if (!state) {
+          window.alert('Export fehlgeschlagen - kein gueltiger Arbeitsbereich.');
+          return;
         }
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = getWorkspaceExportFilename();
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Export fehlgeschlagen', error);
+        window.alert('Export fehlgeschlagen. Bitte versuchen Sie es erneut.');
+      }
 
-        const x = Number.isFinite(shapeData.x) ? shapeData.x : 0;
-        const y = Number.isFinite(shapeData.y) ? shapeData.y : 0;
-        setShapePosition(shape, x, y);
+    }
 
-        if (Number.isFinite(shapeData.zIndex)) {
-          shape.style.zIndex = String(shapeData.zIndex);
+    function importWorkspaceFromFile(file) {
+
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.addEventListener('error', () => {
+        console.error('Datei konnte nicht gelesen werden.', reader.error);
+        window.alert('Die Datei konnte nicht gelesen werden.');
+        if (workspaceImportInput) {
+          workspaceImportInput.value = '';
         }
       });
+      reader.addEventListener('load', (event) => {
+        try {
+          const content = typeof event.target?.result === 'string' ? event.target.result : '';
+          if (!content) {
+            throw new Error('Leerer Inhalt');
+          }
+          const parsed = JSON.parse(content);
+          if (!parsed || typeof parsed !== 'object') {
+            throw new Error('Ungueltiges Format');
+          }
 
-      clearSelection();
+          const hasShapes = workspaceCanvas.querySelector('.shape');
+          if (hasShapes) {
+            const confirmed = window.confirm('Aktueller Arbeitsbereich wird ueberschrieben. Fortfahren?');
+            if (!confirmed) {
+              return;
+            }
+          }
 
-      if (Number.isFinite(state.scale)) {
-        applyZoom(state.scale);
-      }
-
-      if (Number.isFinite(state.scrollTop)) {
-        workspaceViewport.scrollTop = state.scrollTop;
-      }
-
-      isRestoringState = false;
+          const applied = applyWorkspaceState(parsed);
+          if (!applied) {
+            window.alert('Die Datei konnte nicht importiert werden.');
+          }
+        } catch (error) {
+          console.error('Import fehlgeschlagen', error);
+          window.alert('Import fehlgeschlagen. Bitte pruefen Sie die Datei.');
+        } finally {
+          if (workspaceImportInput) {
+            workspaceImportInput.value = '';
+          }
+        }
+      });
+      reader.readAsText(file, 'utf-8');
 
     }
 
@@ -3979,6 +4133,28 @@ function removeSelectedShape() {
         scheduleSave();
       });
     });
+
+    fileActionButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.fileAction;
+        if (action === 'export') {
+          exportWorkspaceAsFile();
+        } else if (action === 'import') {
+          if (workspaceImportInput) {
+            workspaceImportInput.value = '';
+            workspaceImportInput.click();
+          }
+        }
+      });
+    });
+
+    if (workspaceImportInput) {
+      workspaceImportInput.addEventListener('change', () => {
+        const file = workspaceImportInput.files && workspaceImportInput.files[0];
+        if (!file) return;
+        importWorkspaceFromFile(file);
+      });
+    }
 
     labelFontButtons.forEach((button) => {
       button.addEventListener('click', () => {
