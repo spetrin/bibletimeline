@@ -902,51 +902,29 @@
 
     .tick {
 
-
-
       position: absolute;
-
-
 
       left: 50%;
 
-
-
-      transform: translate(-50%, -50%);
-
-
+      transform: translateY(-50%);
 
       display: flex;
 
-
-
       align-items: center;
-
-
 
       gap: 12px;
 
-
-
       color: var(--muted);
-
-
 
       font-size: 0.9rem;
 
-
-
       font-weight: 500;
-
-
 
       letter-spacing: 0.01em;
 
-
-
       white-space: nowrap;
 
-
+      padding-left: 8px;
 
     }
 
@@ -958,23 +936,15 @@
 
     .tick__line {
 
-
-
       display: block;
-
-
 
       height: 1px;
 
-
-
       background: var(--tick-color);
-
-
 
       transition: width 0.2s ease;
 
-
+      transform-origin: left center;
 
     }
 
