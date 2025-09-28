@@ -1794,12 +1794,14 @@
     }
 
     .shape--segment-open .arrow-shaft {
-      top: 18px;
-      bottom: 18px;
+      top: 0;
+      bottom: 0;
       height: auto;
       width: 18px;
       border-radius: 9px;
       background: var(--arrow-color, var(--arrow-green));
+      mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
     }
 
     .shape--image {
@@ -3657,8 +3659,8 @@ function removeSelectedShape() {
       let bottomElement = '';
 
       if (type === 'segment-open') {
-        topElement = '<div class="arrow-fray arrow-fray--top"></div>';
-        bottomElement = '<div class="arrow-fray arrow-fray--bottom"></div>';
+        topElement = '';
+        bottomElement = '';
       } else if (type === 'arrow-double-slim') {
         topElement = '<div class="arrow-head"></div>';
         bottomElement = '<div class="arrow-head arrow-head--bottom"></div>';
