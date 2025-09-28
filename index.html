@@ -2802,11 +2802,14 @@
 
       if (!Number.isFinite(scaleHeight) || scaleHeight <= 0) return;
 
-      const resolvedHeight = `${Math.round(scaleHeight)}px`;
-      workspaceCanvas.style.minHeight = resolvedHeight;
-      workspace.style.minHeight = resolvedHeight;
-      workspaceCanvas.style.height = resolvedHeight;
-      workspace.style.height = resolvedHeight;
+      const baseHeightPx = `${Math.round(scaleHeight)}px`;
+      const visualHeightPx = `${Math.round(scaleHeight * Math.max(currentScale, 1))}px`;
+
+      workspaceCanvas.style.minHeight = baseHeightPx;
+      workspaceCanvas.style.height = baseHeightPx;
+
+      workspace.style.minHeight = visualHeightPx;
+      workspace.style.height = visualHeightPx;
 
     }
 
