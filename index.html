@@ -854,6 +854,8 @@
 
     .timeline-scale {
 
+      --axis-width: 4px;
+
       position: relative;
 
       width: 160px;
@@ -884,7 +886,7 @@
 
       bottom: 0;
 
-      width: 4px;
+      width: var(--axis-width);
 
       transform: translateX(-50%);
 
@@ -904,7 +906,7 @@
 
       position: absolute;
 
-      left: 50%;
+      left: calc(50% + var(--axis-width) / 2);
 
       transform: translateY(-50%);
 
